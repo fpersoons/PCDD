@@ -15,7 +15,7 @@ des États-Unis, contrat n° AID-OAA-I-15-0004.
 
 ## Les documents
 
-Quatre documents, chacun pour un usage et un lecteur distincts.
+Cinq documents, chacun pour un usage et un lecteur distincts.
 
 | Document | Pour qui | Formats |
 |---|---|---|
@@ -23,6 +23,7 @@ Quatre documents, chacun pour un usage et un lecteur distincts.
 | [Guide d'utilisation](docs/Guide_utilisation_PCDD.docx) | l'officier, avant la première session | Word · [HTML](docs/Guide_utilisation_PCDD.html) |
 | [Note méthodologique](docs/Note_methodologique_PCDD.docx) | responsables de district, partenaires institutionnels | Word · [HTML](docs/Note_methodologique_PCDD.html) |
 | [Guide du développeur](docs/Guide_developpeur_PCDD.docx) | qui reprend le système | Word · [HTML](docs/Guide_developpeur_PCDD.html) |
+| [Système de design](docs/Systeme_de_design_PCDD.docx) | qui fait évoluer le classeur ou les documents | Word · [HTML](docs/Systeme_de_design_PCDD.html) |
 
 **La fiche opératoire** tient en deux feuilles recto-verso : les trois étapes,
 les vérifications préalables, le code couleur, les contrôles bloquants. Elle est
@@ -40,6 +41,12 @@ document à produire quand un chiffre affiché est contesté.
 **Le guide du développeur** décrit le classeur de référence et sa configuration
 district par district, en six parties par composant. Il est le seul dont la
 chaîne de production figure ici.
+
+**Le système de design** fixe la grammaire visuelle commune au classeur et aux
+documents : la palette et l'emploi de chaque couleur, la typographie, les dix
+pictogrammes, l'architecture de l'écran d'arbitrage, la sémantique des cellules
+et des boutons, le gabarit de page. C'est la référence à ouvrir avant d'ajouter
+un écran, un encart ou une couleur, pour que l'ajout ne détonne pas.
 
 ## La chaîne de production
 
