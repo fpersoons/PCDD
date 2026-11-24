@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Chemonics International — projet GHSC-PSM">
+<meta name="description" content="Note méthodologique du PCDD — novembre 2026.">
+<style>:root{color-scheme:light dark}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<title>Note méthodologique du PCDD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* Charte GHSC-PSM / USAID — reprise du gabarit Word officiel du projet
+   rouge BA0C2F · bleu 002F6C · bleu clair 0067B9 · gris 6C6463 / CFCDC9 */
+:root{
+  --ground:#F5F5F3;
+  --surface:#FFFFFF;
+  --surface-2:#F0F0ED;
+  --ink:#1C1B1A;
+  --ink-2:#403D3C;
+  --muted:#6C6463;
+  --line:#DFDEDA;
+  --line-strong:#CFCDC9;
+
+  --rouge:#BA0C2F;          /* USAID red — titres */
+  --rouge-h1:#C2113A;       /* Heading 1 */
+  --rouge-fonce:#651D32;    /* accent 3 */
+  --bleu:#002F6C;           /* USAID blue — Heading 2 */
+  --bleu-clair:#0067B9;     /* accent 1 */
+  --bleu-pale:#A7C6ED;      /* accent 2 */
+
+  --accent:#0067B9;
+  --accent-soft:#E4EFF9;
+  --forte:#BA0C2F;
+  --forte-soft:#FAE5E9;
+  --faible:#0067B9;
+  --faible-soft:#E4EFF9;
+  --danger:#BA0C2F;
+  --danger-soft:#FAE5E9;
+
+  --code-bg:#0E1A2B;
+  --code-ink:#DCE5EF;
+  --code-key:#8FBCEA;
+  --code-str:#E8A0AE;
+  --code-com:#7C8DA3;
+  --shadow:0 1px 2px rgba(28,27,26,.05), 0 8px 24px -16px rgba(28,27,26,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161C;
+    --surface:#181D25;
+    --surface-2:#1E242D;
+    --ink:#E8EAED;
+    --ink-2:#C2C6CC;
+    --muted:#8E9299;
+    --line:#2A313B;
+    --line-strong:#3B434F;
+
+    --rouge:#EE7186;
+    --rouge-h1:#EE7186;
+    --rouge-fonce:#D4899A;
+    --bleu:#8FB6E4;
+    --bleu-clair:#6FA8DC;
+    --bleu-pale:#3C5F86;
+
+    --accent:#6FA8DC;
+    --accent-soft:#152436;
+    --forte:#EE7186;
+    --forte-soft:#2C1720;
+    --faible:#6FA8DC;
+    --faible-soft:#152436;
+    --danger:#EE7186;
+    --danger-soft:#2C1720;
+
+    --code-bg:#0A1017;
+    --code-ink:#DCE5EF;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161C;
+  --surface:#181D25;
+  --surface-2:#1E242D;
+  --ink:#E8EAED;
+  --ink-2:#C2C6CC;
+  --muted:#8E9299;
+  --line:#2A313B;
+  --line-strong:#3B434F;
+
+  --rouge:#EE7186;
+  --rouge-h1:#EE7186;
+  --rouge-fonce:#D4899A;
+  --bleu:#8FB6E4;
+  --bleu-clair:#6FA8DC;
+  --bleu-pale:#3C5F86;
+
+  --accent:#6FA8DC;
+  --accent-soft:#152436;
+  --forte:#EE7186;
+  --forte-soft:#2C1720;
+  --faible:#6FA8DC;
+  --faible-soft:#152436;
+  --danger:#EE7186;
+  --danger-soft:#2C1720;
+
+  --code-bg:#0A1017;
+  --code-ink:#DCE5EF;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:Calibri,"Carlito","Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  font-size:16.5px;
+  line-height:1.58;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui,nav.toc a,th,table,.pill,.sev,.lbl,.trig,.toc-title,.kicker{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3","Helvetica Neue",Arial,sans-serif;
+}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px;align-items:start}
+
+/* ---------- masthead ---------- */
+header.mast{
+  border-top:6px solid var(--rouge);
+  border-bottom:1px solid var(--line-strong);
+  background:var(--surface);
+}
+.mast-inner{padding:30px 0 34px;display:flex;flex-direction:column;gap:16px}
+.logo-ghsc{display:block;width:min(430px,78%);height:auto;margin-bottom:6px}
+:root[data-theme="dark"] .logo-ghsc,
+.logo-usa{background:transparent}
+.kicker{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--bleu);
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.kicker .sep{width:4px;height:4px;border-radius:50%;background:var(--line-strong)}
+h1{
+  font-size:clamp(28px,4.1vw,42px);line-height:1.08;margin:0;
+  font-weight:700;letter-spacing:-.01em;text-wrap:balance;color:var(--rouge);
+}
+.standfirst{
+  font-size:18px;color:var(--ink-2);max-width:76ch;margin:0;
+}
+.mast-meta{
+  display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:4px;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+}
+.mast-meta b{color:var(--ink-2);font-weight:500}
+
+/* ---------- nav ---------- */
+nav.toc{position:sticky;top:24px;padding:36px 0 40px}
+nav.toc .toc-title{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 14px;
+}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{
+  display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:baseline;
+  text-decoration:none;color:var(--ink-2);
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:13.5px;line-height:1.35;
+  padding:6px 8px;border-radius:4px;border-left:2px solid transparent;
+}
+nav.toc a:hover{background:var(--surface);color:var(--accent);border-left-color:var(--accent)}
+nav.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+main{padding:44px 0 120px;min-width:0}
+
+/* ---------- sections ---------- */
+section{margin:0 0 68px;scroll-margin-top:20px}
+section > h2{
+  font-size:clamp(20px,2.5vw,26px);font-weight:700;letter-spacing:-.008em;
+  margin:0 0 6px;text-wrap:balance;color:var(--rouge-h1);
+}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;
+  color:var(--bleu-clair);letter-spacing:.08em;display:block;margin-bottom:10px;
+}
+.lede{color:var(--ink-2);margin:0 0 26px}
+h3{font-size:17.5px;font-weight:700;margin:34px 0 10px;letter-spacing:0;color:var(--bleu)}
+h4{font-size:14.5px;font-weight:700;margin:24px 0 8px;color:var(--muted);
+   font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;letter-spacing:.01em}
+p{margin:0 0 14px}
+ul,ol.body{padding-left:20px;margin:0 0 16px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+hr.rule{border:0;border-top:1px solid var(--line);margin:44px 0}
+
+/* ---------- inline code ---------- */
+code{
+  font-size:.855em;background:var(--surface-2);border:1px solid var(--line);
+  padding:.08em .34em;border-radius:3px;color:var(--ink);white-space:nowrap;
+}
+.cell{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+
+/* ---------- code blocks ---------- */
+.code{
+  background:var(--code-bg);border-radius:6px;margin:0 0 20px;overflow:hidden;
+  border:1px solid var(--line);
+}
+.code .cap{
+  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;
+  padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#93A5BC;
+}
+.code .cap b{color:var(--code-key);font-weight:500}
+.code pre{
+  margin:0;padding:14px;overflow-x:auto;
+  font-size:12.6px;line-height:1.62;color:var(--code-ink);
+}
+.code pre code{background:none;border:0;padding:0;white-space:pre;color:inherit;font-size:inherit}
+.k{color:var(--code-key)} .s{color:var(--code-str)} .c{color:var(--code-com);font-style:italic}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.6px;
+      font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;min-width:520px}
+th{
+  text-align:left;font-weight:600;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);padding:11px 14px;border-bottom:1px solid var(--line-strong);
+  background:var(--surface-2);white-space:nowrap;
+}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+td.mono,th.mono{font-family:"IBM Plex Mono",monospace;font-size:12.2px;color:var(--ink)}
+td b{color:var(--ink);font-weight:600}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+
+/* ---------- callouts ---------- */
+.note{
+  border-left:3px solid var(--accent);background:var(--surface);
+  padding:14px 18px;margin:0 0 22px;border-radius:0 5px 5px 0;max-width:84ch;
+}
+.note.warn{border-left-color:var(--forte)}
+.note.stop{border-left-color:var(--danger)}
+.note p:last-child{margin-bottom:0}
+.note .lbl{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:5px;
+}
+.note.warn .lbl{color:var(--forte)}
+.note.stop .lbl{color:var(--danger)}
+
+/* ---------- season pills ---------- */
+.pill{
+  display:inline-block;font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.04em;padding:2px 8px;border-radius:99px;white-space:nowrap;
+}
+.pill.f{background:var(--faible-soft);color:var(--faible)}
+.pill.h{background:var(--forte-soft);color:var(--forte)}
+.pill.a{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- diagram ---------- */
+figure{margin:0 0 26px}
+.diagram{
+  overflow-x:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:6px;padding:22px 20px;
+}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+/* ---------- steps / fiche ---------- */
+.fiche{
+  background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:18px 20px;margin:0 0 16px;box-shadow:var(--shadow);
+}
+.fiche h4{margin:0 0 4px;font-size:14.5px;color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
+.fiche .trig{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;color:var(--muted);margin:0 0 12px}
+.fiche dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13.8px}
+.fiche dt{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.1em;
+          text-transform:uppercase;color:var(--muted);padding-top:4px}
+.fiche dd{margin:0;color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:0 0 22px}
+
+/* ---------- risk list ---------- */
+.risks{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);
+       border-radius:6px;overflow:hidden;background:var(--surface);margin:0 0 22px}
+.risk{display:grid;grid-template-columns:82px 1fr;gap:18px;padding:16px 20px;
+      border-bottom:1px solid var(--line)}
+.risk:last-child{border-bottom:0}
+.risk .sev{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;padding:3px 0;color:var(--danger);
+  border-top:2px solid var(--danger);height:fit-content;
+}
+.risk.med .sev{color:var(--forte);border-top-color:var(--forte)}
+.risk.low .sev{color:var(--muted);border-top-color:var(--line-strong)}
+.risk h4{margin:0 0 6px;font-size:14.5px;color:var(--ink)}
+.risk p{margin:0 0 8px;font-size:14.2px;max-width:80ch}
+.risk p:last-child{margin-bottom:0}
+.risk .fix{font-size:13.4px;color:var(--muted)}
+.risk .fix b{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;letter-spacing:.1em;
+             text-transform:uppercase;color:var(--accent);margin-right:6px}
+
+footer{border-top:3px solid var(--rouge);padding:26px 0 64px;color:var(--muted);font-size:12.6px;line-height:1.5}
+footer p{max-width:78ch;margin:0 0 12px}
+.foot-top{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.foot-id{max-width:52ch}
+.foot-id .prog{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;
+  font-size:13px;font-weight:700;color:var(--bleu);margin:0 0 4px;letter-spacing:.01em;
+}
+.foot-id .dev{margin:0;color:var(--ink-2)}
+.foot-id .dev b{color:var(--ink)}
+.logo-usa{width:220px;height:auto;flex:0 0 auto}
+:root[data-theme="dark"] .logo-usa,
+:root:not([data-theme="light"]) .logo-usa{filter:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .logo-usa,
+  :root:not([data-theme="light"]) .logo-ghsc{background:#FFFFFF;padding:6px 10px;border-radius:3px}
+}
+:root[data-theme="dark"] .logo-usa,
+:root[data-theme="dark"] .logo-ghsc{background:#FFFFFF;padding:6px 10px;border-radius:3px}
+.foot-legal{border-top:1px solid var(--line);padding-top:16px;font-size:11.8px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;padding:26px 0 6px;border-bottom:1px solid var(--line)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0}
+  main{padding-top:30px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- impression / PDF ---------- */
+@media print{
+  :root{ --ground:#FFFFFF; --surface:#FFFFFF; --shadow:none; }
+  @page{margin:14mm 12mm}
+  body{font-size:10.5pt;background:#fff}
+  .wrap{max-width:none;padding:0}
+  .layout{display:block}
+  nav.toc{display:none}
+  main{padding:18px 0 0}
+  section > h2, h3, h4{break-after:avoid-page}
+  .fiche,.note,.code,.tw,figure{break-inside:avoid-page}
+  .tw{overflow:visible}
+  table{min-width:0;font-size:9pt}
+  .code pre{font-size:8.6pt;white-space:pre-wrap;word-break:break-word}
+  a{color:inherit;text-decoration:none}
+}
+
+/* ---------- figures du guide d'utilisation ---------- */
+figure.fig{margin:0 0 26px}
+figure.fig svg{display:block;width:100%;height:auto;border-radius:6px}
+figure.shot{margin:0 0 24px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+figure.shot img{max-width:min(100%,560px);border:1px solid var(--line);border-radius:5px;background:#fff;padding:6px}
+figure.fig figcaption,figure.shot figcaption{
+  font-size:12.5px;color:var(--muted);margin-top:10px;max-width:82ch;
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;
+}
+/* ---------- « Que faire si… » ---------- */
+.qas{display:grid;gap:12px;margin:0 0 22px}
+.qa{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:0 5px 5px 0;padding:14px 18px;max-width:84ch}
+.qa h4{margin:0 0 5px;font-size:14.5px;color:var(--ink);
+       font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif}
+.qa p{margin:0;font-size:14px;color:var(--ink-2)}
+/* fiche sans intitulé de colonne */
+.fiche dl dt:empty{display:none}
+.fiche dl dt:empty + dd{grid-column:1 / -1}
+/* ---------- sommaire à deux niveaux ---------- */
+nav.toc ul.sub{list-style:none;margin:2px 0 8px;padding:0 0 0 34px;display:flex;flex-direction:column;gap:0}
+nav.toc ul.sub a{display:block;font-size:12.5px;padding:3px 8px;color:var(--muted);
+                 border-left:1px solid var(--line);border-radius:0}
+nav.toc ul.sub a:hover{color:var(--accent);border-left-color:var(--accent);background:none}
+@media print{
+  figure.fig svg{break-inside:avoid-page}
+  .qa{break-inside:avoid-page}
+}
+
+/* ---------- fiches du guide d'utilisation ---------- */
+.fiche h4{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;
+          font-size:15px;font-weight:700;color:var(--bleu)}
+.fiche dd{font-size:14px;line-height:1.52}
+.fiche dl{gap:8px 18px}
+.grid2 .fiche{margin:0;height:100%}
+
+/* ---------- encarts : bleu = information · ambre = à retenir · rouge = vigilance ---------- */
+.note.warn{border-left-color:#C8701A}
+.note.warn .lbl{color:#C8701A}
+/* ---------- sous-titres de niveau 3 ---------- */
+main h4{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;
+        font-size:15.5px;font-weight:700;color:var(--ink);letter-spacing:0;
+        text-transform:none;margin:28px 0 8px}
+.fiche h4,.qa h4{margin:0 0 5px}
+
+/* ---------- pictogrammes ---------- */
+svg.ico{flex:0 0 auto;display:block}
+/* ---------- encarts : bandeau de couleur pleine, bien visible ---------- */
+.note{padding:0;border:1px solid var(--line);border-left-width:4px;border-radius:0 6px 6px 0;
+      overflow:hidden;box-shadow:var(--shadow)}
+.note .hd{display:flex;align-items:center;gap:9px;padding:8px 16px;background:var(--accent);color:#fff}
+.note .hd .lbl{margin:0;color:#fff;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+               font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif}
+.note .bd{padding:14px 18px;background:var(--surface)}
+.note .bd p:last-child{margin-bottom:0}
+.note.warn{border-left-color:#C8701A}
+.note.warn .hd{background:#C8701A}
+.note.stop{border-left-color:var(--rouge)}
+.note.stop .hd{background:var(--rouge)}
+/* ---------- fiches « en bref » ---------- */
+.fiche dl dt{display:flex;align-items:center;gap:7px;color:var(--bleu);padding-top:2px}
+.fiche dl dt span{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+/* ---------- « Que faire si… » ---------- */
+.qa{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.qa > svg.ico{color:var(--accent);margin-top:2px}
+/* ---------- légende des pictogrammes ---------- */
+.legende{display:grid;gap:10px;margin:0 0 20px;max-width:84ch}
+.legende .lg{display:flex;align-items:center;gap:12px;padding:9px 14px;
+             background:var(--surface);border:1px solid var(--line);border-radius:5px}
+.legende .lg svg{color:var(--accent)}
+.legende .lg[data-ic="retenir"] svg{color:#C8701A}
+.legende .lg[data-ic="vigilance"] svg{color:var(--rouge)}
+.legende .lg[data-ic="blocage"] svg{color:var(--bleu)}
+.legende .lg[data-ic="objectif"] svg{color:var(--bleu)}
+.legende .lg span{font-size:14px;color:var(--ink-2)}
+.fiche h4{display:flex;align-items:center;gap:9px}
+.fiche h4 svg{color:var(--accent)}
+
+/* ---------- cartes de survol des planches ---------- */
+figure.fig, figure.fig svg{overflow:visible}
+figure.fig{position:relative;z-index:0}
+/* la planche survolée passe au-dessus des suivantes, sinon la carte de détail
+   serait recouverte par la figure qui suit dans le flux */
+figure.fig:hover,figure.fig:focus-within{z-index:5}
+@media print{figure.fig svg{overflow:hidden}.pop{display:none}}
+</style>
+
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="mast-inner">
+      <img class="logo-ghsc" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvgAAAA2CAMAAACFgR08AAAAwFBMVEXlHi92do17hobPHiZwcHG3IyGZmZl+foN+gYOqAFXQHyZ/gIP7A3b/XV0AAP+qVVWHe4cA/wAA//95j3l/gYN/AD+bnKH//wA/f39/AH9/fwB///+BfYGZmWYAAADWISeFhor/AADRICbQICbQICZ+fn7jJCrSJSbQICbQICbQISaBgoWrAAB/AACCgoWBgoT////PHiWAgYWBgYSqqqr/AFXRGyqCgoS+AD6Rkpa/Pz/LMzPQHiZVVVWHh4d+goSjxFzeAAAAQHRSTlMHGyRuEggFTm0DkpMCAgEDGQEBDdEE/wEEAgICQQUA+/kBzYyxBv4QUXAy0AMCsI8BKG9QAwMSLgT+BAVMAxFR7tQNBAAAHsJJREFUeNrtm4eW2ziyQCm11O5uh5nZ8PZFSGAQxSiKVI7//1dbCSCo0PasZ8c7b8Vz7JZIAigULgpVBchLgmCuCqWUVvMgSJR7pUHoh2EyVzcuDY+TkJ9rupOr4gAF/DBI4XHhVleoaRBMlYLG6Ergy094j76kMVcYJ1hC2wJzeGeFRVKtpc0pFE0+w4c0MFfi4TesseDG4I2VWgXuNeVaRW6ok8ScetgQiPnk9CtXw7YXuTTKDR3mytTDAqTcJH1JrjR0qVlQyaGVWoti5tS/V6cejZ9c+bFv+GiqPlk9xbZH8Hdqx4mETaVVrM1z5E+H8AWKy9dpzN1JuATXy6qmsm9tGzmzAEo5rK7bcHucWA0lPIBxq34qaCstzBgm0xXd2Cfy1ao5V7lDlNQLusH++m8Bd2AlxQ7tO/haYGWhVxIHImrX80eTg1qyWJPJqC1ZrIKRXG+5vuY+Dc3jUcCDNfXNjTDFF+DDnNrWOvYnE1CQP5EXJqGKVWi++QlAUagYPx+Ito0KsMBezfHlgAQEXWmoYDKK1Q4em5pGQ5QcPsXSM3hnTuXsNfGtSgrVdmvkz9UQe+273B/aXsy5X1bqkW9mEMpn5fJU0qlDLugya3apDvhcbxypfa5nSfWEXGvOslCbaUf+UGETIbRE0wg7a6Y5dChsx2GjSNE8ngdobQVlWj2DcXCrBgoLbUvoz+FERNEaP25yq5R2sP1UQ4WTKTRF2hqZnpNck9GKK1A5aO0Ag3zAQqmYEJCEP8K1gy7Z8cex80aTVvHF5VikhmKV2JvQwN4ZaR4vElinIwJFs4ZYhwZ80geAP5oa8EEEh+x2lAL1esX9kzMuCWiBimMnWKw5dAyUlYh+UgJTtXMFwW8JhBa0gA+vFQQWymW6FRv9yzdQWkvvSsAPRaU+tt4BZxQ6lrrFeOJ7eodih06/Or1IyUSGTk0HGUKW1aN6PZQmvAbfaHbJbeiN02MBXw+poZUMNI3ANfhYeYJc3wL/J8s1jEOMwrrjieAH7kjtnaonPgLn4zAtsfm5MEoCj9JWaQenyKrgNjatxGILaEx4xBF8rCHm1nydU6/CUQd8Z2bDc68FejQlxV+NBVDi2e4SZV7HxBmRl9znKbXF4BslaylwD3xWfbDy4nkSpkrf5D5JvWEMDg/McoHyKd5DAaLzM3bML7QSjEPQOep4nuI1ZzUE8I1mMHYhFrOVX4HPajbgCPgh15QCvIdJCyU2EquYHsHHJ3rL2HtYepCj6Wo4nE/DRL1uOuA7vUipF15RsJyrdD7F1nnt2MiYHPTGgO9/BXxfwA9EammP60lcjEjXKyM/6Wv+igq/BT4zmsSeB+MQs1Kd8RwJ+Cg/6RnaTdFsx/NDSAZnZ8GH9t+QUa0/4b2gdS5oYIK550EdU1xCWvAPbc9JtSL/BfgjceCuwA9X85QchYPShCJ8JTXHesljD2MxFKLAIuYaufenMYAHfhM6PvjWNJViWpYFknjy5lh8lCFv5+dd8He3B9PyQ4uee4vsokQDU1Iptcc2k1rRMbNgJw+tCDjIpOZYwKciLvg+LlM5dcen6S/gB62sDL7Pzo5vVgjFI9Rx4HEZc93xLvja7UXKa10rJ832lR3CxKwkvwr8N/eVV6mHB8wF36mCxbwLfme1Ke6AT/LHNPoEPr0coMpUCz4TPoWRoJK6MEoLecaIivRN8HMNhYJQvNtL8InaW+BT53z64PnSypTG4LM7Fgcai4LXnnDYjlch2lC0Jo5MUEWyTPgrgU8QFeKCIkT3wX8if6TQenPl4LPpTZUH1kHn+JyXSVhq4UbBTkysjK+zZE8H/mJjS28Jl6gh0V7OhpDAn6Dm/N1Su+CH4Yi8tSX2OmgtfrD8hDXlCD7U5CNUFvwCRdMhGmVP54XjhiI/+KzYIG0d8PV1LzxoluQc6niYCvj0nu/5MsrvgF/AkgH/XPD1CqV2LNPK4NABn+Qne4HyM/hFDLXlRRd8Ut5K8zjdBR9qIUsdMPhDsF2au9OCj3YB58JO+8Y+WqU8kdKKjbEO02IDsgwLC/4nGrEpBxpd8AMC+/Um+OADfRL1EfjA09Kj6SdjQc16QpTewzt+zgNI7hODn+LXlQ0m/osaSmQlRfAnYcgWlUB9ewd8mss4AZfFjYTO0Bf7w3xpNjwmvKTQAstO2ZZptnQ/5TcsPlDhOeCHbJVyB/xJkLCBIXM9d8BXf7MWn3UOHC4N+HaEyDS5biWaMi1XF3zuxapgKqkXKIO1+AlpXd4L2JJu3gP/oOwSaF0d9d+OAaF66L/ltcXX7aIhFp+vLvhPbBd3+n2LvwRaAgv+HpzT/Ar8Qkw+BQeF7iit0J2BM8NowOc5HMdoEGjIW/AnCSvy9abFB3dAO+AXeb5cMfhXY3Eg2cn/NwNowC9yA76JkHz6L6dXEPwpD5ZWbxBgv+fjszeceJRAugSf9KM37q3AGFwlrs2TIjWmMk+mGAfg35gu7bg6Mal+j7WGMoFiB/yQ7hcU9oeeAz5V5MUMfqDIGOTvgU+LdtgJWDrgSyxSmF5SLxh8aGk1pegQna7cBNAwyu+Bn8RzvOLEAZ+l3jsIUT1kjd4HP4xTqm7qgK/ZgU0A4OV7Fn/pbQRxbm6peZZ7LvhQBiWNfaGrXVNcpfHAcc/mT9JzFlCcy/zC4uNdmg/X4JNcgXV15sbVWalus7wI0SyPXSAdV+eJFwUcZjIlhc/0sasD4PivBQ7qJBy+n9XhUB5TqBdGn0NAmlzc+1TnvIzunEEPOG+TsMsIziSDb+PvmIPGeE7BzQqeormgEEdSPsbVUeQ57rGaaXyV1Uk4ZxaQUUAu74Mv3hUYR0YoXXXB33UmBke1DL7Nu2HFtFz6m888tvk74DuX383qIGpcz5DF1Muvgu9eNqsj8bGP6Ot3ffxV0Aa3hq8QXGkX/ILULxPaVYNedrXY6ZldarSeGq/GAT8s4hHzcAU+LmJeQgaFg9vVCiPZCfpLIfqFy1abGDYGoiCedunKWHxbjCrfsdP0xCspg89tE0RP6j3wkXweumB1kdRhXdPk8s0wMCQbYyToW4xq8AtxQ5fM5GhC15TV4OShKJ3p83hMlRvcYg8SzvsPUwd8rikQ8KkI+jF3wddoN0DFnknKTJ54Vt4Gv3DBx5ZMNvmvjNKeR+71PfBZxIkLPt9B1EQxklHNvw5+W1sLvjNOHirxNvh+EISc5/A4XReEvkkkOODbFOJBLS+SEN4F+G7PTCDgcQBNuwMu+Oy2pOoafJ8FmWBOuk1nwsKuxewsO2NBqwB6OKnZ33Dz+OAbaC122S+MS6gZfD3lXoC77Hnvgo8uChljlErfA39yC3yLzJD8z1iiDgI/5O261ALFU0s2sHy4TQGWdsBnH4hiX+WA72M9b8HUgL/jxUK/Z/HJeQHwZe/km8Gntnzeq2NPL13FKx5sfR/8MAjxwpIGfN/0/5Mib3LqcT2UEn4ffJ9rwzjNAR/HiTKVPO63wR8xowDUhlTIzPoHpS/A540FsyXiLHwXFl9koWSEcRIDb7WKOaFxAX6M1iikZMNFHl/mzlz8Y+Yh0eoCfO2Arwj8Ce9vCPhUbGrM7hvKEq881oVYfKKf3H0av3fApxGYhs6mVyf5McceJEnSZnBC6ymy174Uk4b1LmkqXgW3YZLYOJnBzzWviy74ZCkwBDq44LvpTF5JebG4D37By2cOikuo4QvwN65fqdVniT3c4BbnMbXj40Whzu69dOZVcJtcbJaZekBd3xrcxl3wcRwKNFETmaUu+MN2A8vHkw9mwwW+hgkfYXDBt0mNK/AvfHzTM/abeMRH0hUf0eyCLymamxtYfjilQBJRDJI3an7DUWPY9pJ9fEr90umKJAlb8AOiUI4JcNQjssAUFvCxvhTt/lQb8A93wFcacQ1sevR2cDtk8BNyV7WbHGAl+5qGe2fA33t7uNrgdi5bbAK+5gFLwSa34JNj5k/8YQd8U5OAv2NTFIeT+1kd8hGlL8EV+BTv+Z5sjksvhljLEzRk4sC4Xep5U3h/P6ujvTzPPe2mM/d7lpqT+LYev/iqxQ90jLXl8wvwsWY1DK0BurFzC7HUig+68JhAqB7zlLkAn3d7XOe2qzSrVr3J8eKsDm+jWecHbWIH/J3m3HAwudrAwjyHoqNCEtw+MUis1Fgrlyh2NYrCWBMDfiybElqbCe/4hFrAp1QrusvW4j9pzDHsOauEqwwdzdGbwg4/SIsJI9P1T2zfvULl3m7FDXO8S55gLDs9BaeGUl+WBwZf8lAC/obNJThTFvwlrojhk2vx8cmcohs3nak9rsmAX2BGa5IEd8F/la14QHsz3IUt+JrTsrmky6QXlGDijRSeuJrXW5ShdTrm/KavuZKv7tzq2PQ/vqhnL/lfUdANi3/jyIIqNryJtrJudKBwh0emG4NL64zOTWbCt2ZNwGdVall3O+D/1SqNdxdubWDR0u7brmDccgE+kjAJ3ia3NrD00qYC55t4zxsysiXLzXqc2zR7cDh+3u7Qgj/fDIe+uz/cyoKGamUhSu3OqkfTGQDWkopZdrz5/V6yQnnX15mSgwzGzst54SXE/Z3Su42MKBZhX8eYMXF1dDdo0rwpYMGX0xK+A/4eJyqldjrgA5Ouq7PjbNzoHR+fd5xzkHL/SYdXFh/06bPJ3+0KJSGDpILQRu9JUnev1Odx+DVHFkzqK3dLhdZX66QXvgV8Wqr2fOBjrqRSjePJTvLSbGA5KTkfNyadRhI698kW/xJ8Hk5/g0rRqqtWAZ+9i3bbHg11F3xJEvq3NrCUkwNP5SxRqpa8WQX8YbMxjcWnV9nNhQUhLhzwJV1DT+SG3Xj5LK4OHWwMaTeAwOcjOW22CxoOQ5QuSWLr2OLJ3zBsmSWhKHlsPM4NHRQLqcHUH9m9yLRzFoV3IvNcF2bnFrPPB7EoAj5vII4c8D1J2eW6a/Fx5c+1A/5Phe8k+67Ax5lhpVQdi481ibPh9mKOAyM+vkdHFKc0QAASbsnSIrnnUFvnBdXxdYuP/dd255rqeeIMIll8ciFwOf8W8LUZpzjgKuZ86hLEDfj40tJsYLng751TzbTme9TqLfA7StvM0xvgb9gtwWHNrZvbBV8OPtzawOqCr8kr8vf55nIsUkP1aLqRvbMWfC17NLlHvhJ4KEWxLDgWNeBTfh51RODzIcyQs0oBLOdDfzLx9Q6NrB9SKoOSYCHcXbXWmpNIoaTFYpKXK6Lkh93xZhLnYvFDCeZ8P+D0DQ6IprNRr58t+DrnzJYFP+djPIn16Dgw4ppCBiZg7c7fBV8O61BqJWyzOkYobKDTiyfai5GlkzMnucmSOVE+kWHreH3/dKZIvZOy2prZg3JlecKdTgf85N5ZHX9C3fEpGb7ML8ZTq28B3zSaqs/X4MO6Hk7sYNsA2jlWVzgZGM5ZqOISfDnq9g3g0xYsWcQ306wlKueImMbP74CvzT6O5s1TK8ubgC8BeCBeoafjNtsV7IHfIR/3IgXKbY+PjYzcXz/MfZsVo4PP+hPbaQ4pzOIA8889b47H6amMnMendDZFLuh6xebgPKcW5Dw+3qNj60DJBr/b8/gSTK3w5PmEXQiZfgZ83xwcb39lYKQkwQl8UxPK4H1izXIvEnse34ayMZ1Gd89282F5p47N9Xn8qXMeX6Qe4i8O5DQhmgSqpyPLUuQX8G+fx1/S6XIZJwrQhs54DgtNb0yCDviTUQd8K9QkBSXG9lC94+wYpXHmyL88j5+2R4KXdGIQAhZ7Hn8SytBQDrlzHn/SAX80kTON+CLZd2csntgbk40GGT8HfJwTVAybF+2wG4I+Pqp/RxMJT7Uw+Jiy9E22Sw4f4OxK2ej54cE4pIHWnSR/KC8EqTY/baE7YRI7SwOYSj4XDcIEEnSEPnnGvk8/KoLK4X6s4tAPzFSFN+HhTq3oHnpaPsUB89AP9/jrLVNTGA5xCwcq/Im9+JDq0lKLf+j+lgBXS5YSO7wCC5famsha2+d+0tYiL9APgWJ48cA/maKfSoSh50jjWHxofE6j9QnaQOlf1ZN9Lyg02Cwj3KtOqZ6OLJ9Ifv7Z1St38TNjCF2MVft7IhkGe3j8wOMZTiUTYfRsfvgU4nrTAhe0qkzxJ1PweHWZv1ZmsIM5yEJivXJlvv+GP0Hyg9ZXD/HxPkCJPGyNh0YVrzg0qQlOcAz9xJEDGqZ8vtZ5iPoqbhKVKy8JTT4Wu7wSbegCK0iwt4G0gT/SCaHOWCCa41+WMKQEuorjdDW0v9yyx9dXqzS2t+dp92gy2vM4jePYzSfreI4lurHwVy8xFZd3/jkXOrLxfO55958r6EV8sxfkm98U/1df16WKf7RLQxin2PlZJI4n3ih+KzXiCeX9Kl2t9D/cuX9IPUzUfOWORS5g3pal+FZZcPhzrnRpz6Gy4ynZB53fLs7ZMHpRO/lkWsWKjon9uhqucSqupf82ZeqvN2Z8keVSv/d8dyXDLr/Spf6uMda/ASnaZIlaNPKLG7+FuTBnNfXXUb/bl+JX68V0rkOUkSG/GCGtvyKLdkbLaw9/36jAvX2DKE256wvbUPwTrfVvZcBQSv2uhfsD9KIzDlq/e+Of0cjvOFY3Zfk+YTz1uB7Xv+H1AP9xPcB/XI/rAf7jelwP8B/X43qA/7ge1wP8x/W4HuA/rsf1AP+3v6Io+r7ii8eAPy4Bf8FX9YeTPFrAPFgcv7+iyul+9YdUxeP6Dot//CHNV9G3YxapXv0Sqcp8+7VNqaY+R/+KMzh6YPgDwK/pOlug/nWvhfq4HZ9EzgpmQVnO6l707cXL7Ti6MZ3W0P8eTSScWnW9Vg8S/w3AH4/H2y3892KHu7r4e/3lxoPq1tvVn+5VYL71m34Xs4t63AoA/PFYJmikGpQbBJ/dxLT6clXnQs3GWXRjPtTb8XamFvwKfH5Rixv9r+58/nJX9ut+36qxUuvmD2B1/j+Cn83KDMivwduplAy6Ik/XLML0pTq2Q8t/K+sgLex/8AhfxKILKWQqio4y0vQN64x+qbfn6rmFkNrrV1KPU8ERniwWFvxI9UHicjbLQOyFZUgKUssie6WOeLfXgt95GW9/gKrGPfry85hMwEJKRz23joUjIwcC/FZFVVWuDljso/riSHKMnBJcAT2FhahfPaLuHwD+DP6A/TTW0KROTv1IPGkYo17/dM9BZThOri0dSBX4hzlVz9HJ8cv7ffmYbZuL+voLt/I+V1BhAxWQa8GHOXAmNG+7Jaee09qJarlr8Ruk/QxzQz7WjG+EEltL/Oc/R05uKTJhBnXLGPOOjk4yd7DxP/HLVK6tpi9mYDzuPzj8IeAfB+D/jsdr1WS1qjPyHhq4kZXihzSwJGTwrFfCf/2jOuMTeLOJyORGERQaZ/UJHeZshjez8oQ1jUt0nsF1LtFAf8CZMMv6+A1eU9WaGoE6mYbnZob1zPptPePyzAYe32xqAz5CPAa0aG2BhkpsJMKa1KksT41p+bnM1tTaWf0Pg9/PqDkqhPIS7Vm5LdHMgxZKBD9SA2ybJMZq+6SNGtvuoS5AxhOabeoWdADbJWnpA6qxN8OXeidSRR/XDHUmHfS5xrXU+KU6Z1TF+RFY/P7gR4PnCAZqAN5uOSOHFw0qXQ2u0PwFbvfxv2ihXrZopGbbEsLFba0GJb9cgp39sB1nGDIgTHRzDaa0kdrO6hlsfDamJ+VRZVKOPKZKnfjBODsd23pAhEj9L7+YtRa/RkBBlgXHvEj5YAz4qvV4LOKAiNF4K20gzQj+IMMAGaYiPIl4Dp2BQPR1FnBz3OCrz+jrS+PVyVY4IxfLyBhhU2PyErNGnaSdGayA9TZj2UvRQVSRwKIPbOYvtkYuh1p8wPgDXJ0F6P9Eg5NhWgOGv1z3Gx4ndIM+rM+zNTrWNYFPVM1waPHtmsa7Ru+YGH/prXE4Zz20ezPVg4EGw9uHe70KYc+adQ+/qD641/V6fTL5lRps5GmGuFE9sz5WALYY6ajX+MWCT9CtjQtD4Ee4VtGDWX8N0mQ9wqrsrRt24snVqbH6gWp4LjD44wFOygiJ5S7CCtP0TqgFRUhD/z9kqIxIvczWp/4M369KwF/BKpEpUsbLqUf3UT3jlzXrgJa3GhY30ih0G0Q4oZp7pN6TQkmbXu/0QPH3B//Ux2UYoKmNp1/ikBBEMxxfkwXsk41a4HsMfkkeSsZ/gYCjYliwJOIQ0beG5g9GjkB0xl8amiZrutVmFhWX4QlElRIpPZ6dKnOyOhSSoiMUXYGfSRfWBC3WyuvDTOoqwaSXrdcE4Ffs63zc1n328TmbBD1a0OSROhoJbVHGWv1MTmGFvcNlQSQs6U38cuYuDOgbyPgzfPmAmjtJMF0bu/Lw8X9MOlPW7h6OBAR5z1Ufh6x/REtb4jCVEK4eAfgr8MFjfSZj1pzPOHnIq2kgiFv/Bd4cRAsCAe0gvNAQAUDyc29wXJNlXdPbbS7vtG7OjA28fI6i54gqReaOEVlrk/mLxMGa9a7Bn1VQ8AM5Sdh+FC36Ah9O65mwxw4Wg49AnrBoj+RaVGoAC15jwIc6no8g0QeYMapvZDxhe//H0xr71pypREQL4iI6Qr01qOJkug0qamj20NyLoh6VjFCZUfTIZ/4Y8EuI3AiwXhVRrhDgUV9oGUeLVQ1MDrEDPjgTFYGDKfXtWAiAkcVC6DEw+CU/h3jgI9vEY8QvsMVv8xzA5JZdX0WYLQjqE/63Vl3wsRT5PmxNO+ADuUekqyZoqyNGDy349ICrt+AjnTWGOFJMvWS8uzFm8KuIsp5NV0YIBNYR4A8OT2N0sGVvag3e1Jn9p4WAb3TwwgvYghattWJlPiLbH+LqcOaNgO4hYDgy1X8K+MDExwvwjY+fRZIHL2cfZ3hFBvz1BfgzvhoL/tqA/0HZNCo65HXTGPDX+N498COUA6fPOPoK+JiEB9fkowgcgetWYsd6Jp15pjq2JQj7InKhz1d3LP6C50rPkfHYo8B0C7fJM+Mu1iTmgMMIBD8yFl90sLbgNwb8wQP8HxXccmKPwa/YEXheOK7O8xGPg6EDfBz02FsQ8GmavNityVvgz2yQALeuwD9GR5tPR1F6Bvy+gG9cnQFOuHaTM1pEJ0w4rfG/3rG3YMIoLhlEUSOuTgZuyuJnB3yq2oS2Av4JZy9Nq7XMF5oXswvwzx0ZB/g8y2YDJfPdxug3wOcQmK8r8PvR47zOjwBfTooZ8IHbkkMxSn1UJYej4N/2OFxD02zBV1VEiz29sbgJfmNnRnQNfm15oaKGfwf8W8Et7iZICBvxgkDBpAS3fX7SU5w8ouxsY8Hn/GTPBb+HeFLn1nR4I8N5gk58F/yGo6DPEr6eDcwLrDPjEPX5Nvg1b7ihui7Ap5Xkcf0Qiz+Q4XthHo5EzxkTbYjNGdf9flPWxFG9/lBymlPAp2JZ01+f4Y1b4JMPM1uv+3XZc12dF1pCsvWabCU1KjnUrqvzTO3O1hTNmnQmWNr6LMkozLeeey9jA/64PK855YQtwyPsSMR5fAxKKA+rqo6rQzcbcb5whjUn2vm6AP9M6dGamsJ8zuylruu+okWwbHq9BvNMLfiN8cAwiMDMbX9WRhwVWx8fMwnr9fqB4u8N/rYFv+adINVutzgbWP9BNo5DYbb4W859Ep3mDQv+lsGHeBG3YXmXBnOk2TZj8GnPBnd48AaaQk7T4K4Y1rNli1+iSGgj8fo4ltOZAD7FnltYa6qKN4Fw14hNtuwl9SryWTgWbehQzDgyewA2pqbtuIgnDIU3W56+FMBycLttwX/mpsoMZVR/kaD+4y/Rc8nt4BEMCHo7Fn+L+VOpcjvGiGNrLD7qN6Ma1eO4zu8LflnWctQMzynQ9jrBgZvts4FzZGHWo333LCubqMS9o7qcmYNgDW3Ng+lTa3zUw4MDMKYqmpW0iR/VWAMUhElSYvJbRfgCcIYF2d2uVJ/aPDblB6qnh8faavqLhyW43ZOc3VnPqMb62BY84aJEaw1GpTPsCVrbNRalmB0E5gNxGS4jrYtVljgfUFRsqER/C1a1rOxH+OTP+AAcFOoZnUzI6qiBt3olBazlmNMyDQt0UlzhkQsc1RHLYx4L3oR1qqG+19g3egHcpBlECo8jC783+LdvR+TTy57SL/aE4S+3fzYRsW9796JziYN3HrZx3913Flf1c/K7+7sUEzygNNEXdlOoqC3dGyzYx/6KYp6jO2ex/2bmjFnx1iZSds6Z3tHBHR0dnx8g/u7gdw6Rt1+OdD7duAP4l85B4qdq0R4ANjSRr8Igdk79mj/0iOqsuk8WDvoVn4nvVs5/MfMD/9p9Hjn7GDkFKzTxhOHimSRl8HHGmRPRXJwyRcfLXuOBGvuFDk1Hyu2Rak8fo4xfFLs75KTjIrHoHDu+/iM54+NV36qFUg97/y9i8f+ol1h8NudfOLDs/qiyaSju/W7QjhgyNLj/mt067fy4HuD/UPC35QX4GINmveq7UY0qCdkxMfUw2A/wfzT4UZY1LfhldvnTxFlW1r/RT/0wZM/KWTN4/HLwj3f9HYLjKE7ER7jbAAAAAElFTkSuQmCC" alt="U.S. Government Global Health Supply Chain Program — Procurement and Supply Management">
+      <div class="kicker">
+        <span>Niger</span><span class="sep"></span>
+        <span>PCDD — PLAN DE CONTRÔLE DE DISTRIBUTION DES DISTRICTS</span><span class="sep"></span>
+        <span>Novembre 2026</span>
+      </div>
+      <h1>Note méthodologique du PCDD</h1>
+      <p class="standfirst">Plan de Contrôle de Distribution des Districts — Contexte, origine des données, règles de calcul et prérequis techniques.</p>
+      <div class="mast-meta">
+        <span><b>Mois de référence</b> · 3</span>
+        <span><b>Saisons</b> · 2</span>
+        <span><b>Outils en amont</b> · 3</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<nav class="toc">
+  
+  <p class="toc-title">Sommaire</p>
+  <ol>
+    <li><a href="#s01"><span class="n">01</span><span>Objet du document</span></a><ul class="sub"><li><a href="#h-un-module-d-analyse-et-non-un-systeme-para">Un module d’analyse, et non un système parallèle</a></li></ul></li>
+    <li><a href="#s02"><span class="n">02</span><span>Contexte et justification</span></a><ul class="sub"><li><a href="#h-contexte-et-problematique-au-niveau-des-di">Contexte et problématique au niveau des districts sanitaires</a></li><li><a href="#h-la-solution-le-module-pcdd">La solution : le Module PCDD</a></li></ul></li>
+    <li><a href="#s03"><span class="n">03</span><span>Objectifs du module</span></a><ul class="sub"><li><a href="#h-donner-au-district-une-reference-opposable">Donner au district une référence opposable</a></li><li><a href="#h-assurer-un-usage-rationnel-des-allocations">Assurer un usage rationnel des allocations du PNLP</a></li><li><a href="#h-produire-les-rapports-de-distribution">Produire les rapports de distribution</a></li></ul></li>
+    <li><a href="#s04"><span class="n">04</span><span>Origine des données</span></a><ul class="sub"><li><a href="#h-les-quatre-maillons-de-la-chaine">Les quatre maillons de la chaîne</a></li><li><a href="#h-trois-consequences-pratiques">Trois conséquences pratiques</a></li></ul></li>
+    <li><a href="#s05"><span class="n">05</span><span>Calcul de la CMMA</span></a><ul class="sub"><li><a href="#h-ce-qu-est-la-cmma">Ce qu’est la CMMA</a></li><li><a href="#h-la-consommation-ajustee">La consommation ajustée</a></li><li><a href="#h-de-la-consommation-ajustee-a-la-cmma">De la consommation ajustée à la CMMA</a></li><li><a href="#h-les-mois-de-reference-et-la-saisonnalite">Les mois de référence et la saisonnalité</a></li><li><a href="#h-donnees-manquantes-et-repli-sur-l-annee-pr">Données manquantes et repli sur l’année précédente</a></li></ul></li>
+    <li><a href="#s06"><span class="n">06</span><span>Utilisation du PCDD</span></a></li>
+    <li><a href="#s07"><span class="n">07</span><span>Prérequis techniques</span></a></li>
+    <li><a href="#s08"><span class="n">08</span><span>Glossaire</span></a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="s01">
+  <span class="sec-num">01</span>
+  <h2>Objet du présent document</h2>
+<p class="lede">Cette note rassemble les éléments de méthode et de contexte du PCDD. Elle ne décrit pas les procédures d’utilisation, qui font l’objet du Guide d’utilisation, ni les gestes quotidiens, résumés dans la Fiche opératoire.</p>
+<p>Elle s’adresse à deux publics : les responsables de district souhaitant comprendre l’origine d’une valeur affichée, et les partenaires institutionnels appelés à apprécier la robustesse de la méthode.</p>
+<h3 id="h-un-module-d-analyse-et-non-un-systeme-para">Un module d’analyse, et non un système parallèle</h3>
+<p>Le PCDD est un module analytique posé sur les données du DHIS2. Il n’est ni un système d’information concurrent, ni un registre de collecte : il ne produit aucune donnée primaire et ne se substitue à aucun outil national.</p>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Ce que le Module fait, et ce qu’il ne fait pas</span></div><div class="bd"><p>Il <strong>lit</strong> les données logistiques déjà rapportées dans le DHIS2 et les met en forme pour éclairer une décision de distribution.</p><p>Il <strong>ne corrige aucune donnée</strong>. Une valeur erronée se corrige à la source, dans le DHIS2 ; le Module ne fait que la refléter.</p><p>Il <strong>n’envoie rien nulle part</strong>. Les fichiers restent sur le poste de travail de l’équipe du district qui l’utilise. Aucune donnée n’est transmise à un serveur, à une base centrale ou à un tiers.</p></div></div>
+<p>Le recours à Excel découle de ce positionnement : l’outil devait être disponible immédiatement, sur des postes déjà équipés, sans déploiement ni administration. Les fonctions qu’il assure aujourd’hui — calcul de la consommation ajustée, arbitrage des quantités, édition des rapports — ont vocation à être reprises par l’eSIGL lorsque celui-ci sera déployé dans les districts.</p>
+<div class="grid2"><div class="fiche"><h4><svg class="ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6.6h3M4 12h3M4 17.4h3" stroke-linecap="round"/><path d="M10.5 6.6H20M10.5 12H20M10.5 17.4H20" stroke-linecap="round"/></svg><span>Fiche opératoire</span></h4><dl><dt></dt><dd>deux feuilles recto-verso à conserver au poste de travail : les trois étapes, les vérifications préalables et le code couleur.</dd></dl></div><div class="fiche"><h4><svg class="ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span>Guide d’utilisation</span></h4><dl><dt></dt><dd>le détail de chaque étape, avec les copies d’écran. À lire avant la première utilisation.</dd></dl></div><div class="fiche"><h4><svg class="ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg><span>Note méthodologique (le présent document)</span></h4><dl><dt></dt><dd>le contexte du projet, l’origine des données, le calcul de la CMMA et les prérequis techniques.</dd></dl></div></div>
+  
+</section>
+
+<section id="s02">
+  <span class="sec-num">02</span>
+  <h2>Contexte et justification</h2>
+<h3 id="h-contexte-et-problematique-au-niveau-des-di">Contexte et problématique au niveau des districts sanitaires</h3>
+<p>Dans le cadre de la gestion logistique des produits de santé au niveau opérationnel, les Districts Sanitaires sont appelés à planifier et à arbitrer les allocations destinées aux Centres de Santé Intégrés (CSI). Cette tâche nécessite une bonne visibilité des données de consommation et des niveaux de stock afin d’assurer une distribution équitable, rationnelle et orientée vers les besoins réels des formations sanitaires.</p>
+<p>Cependant, dans la pratique, plusieurs contraintes limitent la qualité de cette planification. D’une part, les équipes de district ne disposent pas toujours d’une vision consolidée de la situation des CSI. Il demeure difficile de visualiser rapidement, pour chaque formation sanitaire, le stock disponible, la Consommation Moyenne Mensuelle Ajustée (CMMA) calculée à partir des données du DHIS2, ainsi que le besoin réel à couvrir. Cette insuffisance de visibilité réduit la capacité du district à ajuster les quantités à distribuer et peut entraîner des situations de surstock dans certains CSI et de sous-stock dans d’autres.</p>
+<p>D’autre part, les districts manquent généralement d’outils d’aide à la décision permettant de suivre la couverture de stock au niveau du dépôt de district et de simuler l’impact des distributions avant leur exécution. L’absence de ces mécanismes rend difficile :</p>
+<ul><li>la connaissance de la couverture globale en Mois de Stock Disponible (MdS) au niveau du district ;</li><li>la définition d’un objectif harmonisé de MdS à distribuer pour l’ensemble des CSI en fonction de leurs CMMA respectives ;</li><li>l’estimation du MdS résiduel après distribution, afin d’anticiper les risques de rupture ou de surstock au niveau du dépôt de district.</li></ul>
+<p>Ces limites réduisent la capacité des gestionnaires à prendre des décisions rapides, objectives et fondées sur des indicateurs harmonisés.</p>
+<h3 id="h-la-solution-le-module-pcdd">La solution : le Module PCDD</h3>
+<p>C’est pour répondre à ces insuffisances qu’a été développé le Module PCDD (Plan de Contrôle de Distribution des Districts).</p>
+<p>Le PCDD constitue un outil de pilotage et d’aide à la décision conçu pour renforcer la gestion des stocks et la planification des distributions au niveau du district sanitaire. Il permet notamment de :</p>
+<ul><li>centraliser les données essentielles : bons de commande des CSI, CMMA issues du DHIS2 et niveaux de stock disponibles ;</li><li>analyser la situation logistique de chaque CSI en calculant automatiquement les couvertures de stock en MdS ;</li><li>simuler différents scénarios de distribution en fixant un taux cible de MdS à distribuer à l’échelle du district ;</li><li>visualiser instantanément l’impact de la distribution sur le stock restant au niveau du dépôt de district ;</li><li>rationaliser et équilibrer les allocations afin d’attribuer à chaque CSI une quantité cohérente avec sa consommation réelle et son niveau de stock disponible.</li></ul>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Ce que le PCDD change</span></div><div class="bd"><p>Le Module améliore la visibilité des données logistiques, facilite la prise de décision, renforce l’équité dans les distributions et contribue à la prévention des ruptures de stock au niveau des CSI, tout en préservant la sécurité du stock au niveau du district sanitaire.</p></div></div>
+  
+</section>
+
+<section id="s03">
+  <span class="sec-num">03</span>
+  <h2>Objectifs du Module PCDD</h2>
+<p class="lede">Tant que l’eSIGL n’est pas déployé, le district sanitaire n’a aucun moyen de contrôler les bons de commande que lui adressent les formations sanitaires. Il reçoit des quantités demandées, sans référence pour les apprécier. Le PCDD a été conçu pour combler ce vide.</p>
+<h3 id="h-donner-au-district-une-reference-opposable">Donner au district une référence opposable</h3>
+<p>Le PCDD exploite les données logistiques de DHIS2 pour calculer, formation sanitaire par formation sanitaire et produit par produit, la Consommation Moyenne Mensuelle Ajustée. Cette CMMA est ensuite mise en perspective des quantités commandées : le district dispose enfin d’un terme de comparaison pour arbitrer.</p>
+<p>L’arbitrage ne consiste pas à valider ou à refuser une commande en bloc. Il s’agit, pour chaque CSI, de rapprocher la quantité demandée, la consommation réelle, le stock encore disponible sur place et la couverture en mois de stock qui en résulterait après livraison, puis de retenir une quantité cohérente avec l’ensemble. C’est l’objet du module de pilotage.</p>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Ce que l’arbitrage rend possible</span></div><div class="bd"><p>Sans référence de consommation, une commande ne peut être ni contestée ni justifiée. Avec la CMMA, le district peut réduire une demande manifestement surévaluée, relever une demande sous-estimée, et motiver chaque écart par un chiffre.</p></div></div>
+<h3 id="h-assurer-un-usage-rationnel-des-allocations">Assurer un usage rationnel des allocations du PNLP</h3>
+<p>Le district ne distribue pas ce qu’il veut : il répartit ce que le Programme National de Lutte contre le Paludisme lui a alloué. Le PCDD rapproche donc cette allocation du besoin trimestriel calculé à partir des CMMA, et fait apparaître l’écart avant la distribution plutôt qu’après.</p>
+<figure class="fig"><svg viewBox="0 0 980 364" role="img" aria-label="Quand l’allocation ne couvre pas le trimestre" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">Quand l’allocation ne couvre pas le trimestre</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">La CMMA mesure l’écart ; le district choisit alors sa réponse.</text>
+  <rect x="0" y="72" width="318.6666666666667" height="208" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="72" width="318.6666666666667" height="3" rx="1.5" fill="#2E7D4F" stroke="none" stroke-width="1"/><circle cx="30" cy="102" r="12" fill="#2E7D4F"/><text x="30" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">1</text><text x="52" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">L’allocation couvre les</text>
+  <text x="52" y="126" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">besoins</text><line x1="18" y1="136" x2="300.6666666666667" y2="136" stroke="#CFCDC9"/><text x="18" y="158" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Les quantités reçues du PNLP</text>
+  <text x="18" y="177" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">permettent de servir chaque CSI au</text>
+  <text x="18" y="196" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">niveau de couverture visé.</text>
+  <text x="18" y="215" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">L’arbitrage porte sur la répartition.</text><rect x="18" y="240" width="282.6666666666667" height="24" rx="4" fill="#E7F2EC" stroke="none" stroke-width="1"/><text x="159.33333333333334" y="257" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#2E7D4F">distribution normale</text><rect x="330.6666666666667" y="72" width="318.6666666666667" height="208" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="330.6666666666667" y="72" width="318.6666666666667" height="3" rx="1.5" fill="#C8701A" stroke="none" stroke-width="1"/><circle cx="360.6666666666667" cy="102" r="12" fill="#C8701A"/><text x="360.6666666666667" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">2</text><text x="382.6666666666667" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Allocation insuffisante,</text>
+  <text x="382.6666666666667" y="126" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">stock national disponible</text><line x1="348.6666666666667" y1="136" x2="631.3333333333334" y2="136" stroke="#CFCDC9"/><text x="348.6666666666667" y="158" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Le district dispose d’un chiffre</text>
+  <text x="348.6666666666667" y="177" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">opposable pour initier une commande</text>
+  <text x="348.6666666666667" y="196" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">d’urgence ou signaler un besoin</text>
+  <text x="348.6666666666667" y="215" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">d’allocation complémentaire.</text><rect x="348.6666666666667" y="240" width="282.6666666666667" height="24" rx="4" fill="#FBF0E3" stroke="none" stroke-width="1"/><text x="490" y="257" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#C8701A">commande d’urgence</text><rect x="661.3333333333334" y="72" width="318.6666666666667" height="208" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="661.3333333333334" y="72" width="318.6666666666667" height="3" rx="1.5" fill="#BA0C2F" stroke="none" stroke-width="1"/><circle cx="691.3333333333334" cy="102" r="12" fill="#BA0C2F"/><text x="691.3333333333334" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">3</text><text x="713.3333333333334" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Allocation et stock national</text>
+  <text x="713.3333333333334" y="126" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">insuffisants</text><line x1="679.3333333333334" y1="136" x2="962" y2="136" stroke="#CFCDC9"/><text x="679.3333333333334" y="158" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Le district répartit sciemment la</text>
+  <text x="679.3333333333334" y="177" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">pénurie : il peut descendre sous un</text>
+  <text x="679.3333333333334" y="196" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">mois de stock par CSI, en équilibrant</text>
+  <text x="679.3333333333334" y="215" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">la couverture sur le trimestre.</text><rect x="679.3333333333334" y="240" width="282.6666666666667" height="24" rx="4" fill="#FAE5E9" stroke="none" stroke-width="1"/><text x="820.6666666666667" y="257" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#BA0C2F">rationalisation assumée</text>
+  <rect x="0" y="294" width="980" height="70" rx="5" fill="#FBF0E3" stroke="none" stroke-width="1"/><rect x="0" y="294" width="5" height="70" rx="0" fill="#C8701A" stroke="none" stroke-width="1"/><g transform="translate(24,317) scale(1.05)" fill="none" stroke="#C8701A" stroke-width="2.2"><path d="M9.2 17.4h5.6M10 20.3h4M12 3.2a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3.2Z" stroke-linecap="round" stroke-linejoin="round"/></g><text x="64" y="324.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A"><tspan font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="16.5" fill="#C8701A">Dans les trois cas : </tspan>le PCDD ne crée pas de stock. Il rend l’insuffisance visible assez tôt pour</text><text x="64" y="345.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">qu’elle soit traitée, et traçable lorsqu’elle doit être subie.</text>
+  
+</svg><figcaption>Les trois situations possibles, et la réponse du district dans chacune.</figcaption></figure>
+<p>Lorsque les quantités reçues ne suffisent pas à couvrir le trimestre, le district est en mesure de réagir : initier une commande d’urgence, ou signaler un besoin d’allocation complémentaire si les stocks nationaux le permettent. Si le stock national ne suffit pas non plus, le PCDD permet de rationaliser sciemment — répartir la pénurie de manière équilibrée entre les CSI sur l’ensemble du trimestre, quitte à descendre sous un mois de stock, plutôt que de servir les premiers servis et de laisser les suivants à sec.</p>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Une décision assumée, pas subie</span></div><div class="bd"><p>Distribuer moins d’un mois de stock reste une décision de dernier recours. Sa valeur tient à ce qu’elle soit prise en connaissance de cause, documentée et répartie équitablement — et non constatée a posteriori sur les CSI arrivés en dernier.</p></div></div>
+<h3 id="h-produire-les-rapports-de-distribution">Produire les rapports de distribution</h3>
+<p>Le PCDD génère enfin les différents rapports nécessaires au suivi et à la validation des distributions : par CSI, par produit, ou sous forme de rapport officiel destiné à l’impression et à l’archivage. Cette fonctionnalité réduit le temps consacré à la préparation manuelle des rapports, tout en améliorant la cohérence entre les données saisies, les calculs effectués et les documents produits.</p>
+  
+</section>
+
+<section id="s04">
+  <span class="sec-num">04</span>
+  <h2>Origine et circuit des données</h2>
+<p class="lede">Les données sont extraites de DHIS2 au format Excel, puis introduites dans le module de visualisation, qui calcule la complétude pour chaque produit et chaque CSI et présente les principaux indicateurs : stock disponible en début de mois, nombre de jours de rupture, quantités reçues et quantités consommées.</p>
+<p>Ces informations sont ensuite stockées dans un fichier dédié, la <strong>Base Historique</strong>. Le Module PCDD s’appuie sur cette base lors de la saisie des bons de commande pour calculer la CMMA ainsi que la CMM ajustée de faible ou de forte transmission de l’année précédente, utilisées ensuite dans l’évaluation des besoins.</p>
+<figure class="fig"><svg viewBox="0 0 980 402" role="img" aria-label="Du DHIS2 au PCDD — les quatre maillons" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">Du DHIS2 au PCDD — les quatre maillons</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">Le PCDD ne collecte aucune donnée : il exploite ce que trois outils ont produit en amont.</text>
+  <rect x="0" y="72" width="236" height="246" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="72" width="236" height="3" rx="1.5" fill="#0067B9" stroke="none" stroke-width="1"/><circle cx="30" cy="102" r="12" fill="#0067B9"/><text x="30" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">1</text><text x="52" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">DHIS2</text><line x1="18" y1="126" x2="218" y2="126" stroke="#CFCDC9"/><text x="18" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">La source primaire. Stock</text>
+  <text x="18" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">de début de mois,</text>
+  <text x="18" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">quantités reçues,</text>
+  <text x="18" y="205" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">quantités consommées,</text>
+  <text x="18" y="224" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">jours de rupture —</text>
+  <text x="18" y="243" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">rapportés par les</text>
+  <text x="18" y="262" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">formations sanitaires.</text><rect x="18" y="278" width="200" height="24" rx="4" fill="#F7FAFD" stroke="none" stroke-width="1"/><text x="118" y="295" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#0067B9">extraction Excel</text><path d="M237,188 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="248" y="72" width="236" height="246" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="248" y="72" width="236" height="3" rx="1.5" fill="#0067B9" stroke="none" stroke-width="1"/><circle cx="278" cy="102" r="12" fill="#0067B9"/><text x="278" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">2</text><text x="300" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Module de</text>
+  <text x="300" y="126" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Visualisation</text><line x1="266" y1="136" x2="466" y2="136" stroke="#CFCDC9"/><text x="266" y="158" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">L’extraction est importée</text>
+  <text x="266" y="177" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">et contrôlée. Le module</text>
+  <text x="266" y="196" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">calcule les taux de</text>
+  <text x="266" y="215" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">complétude et fait</text>
+  <text x="266" y="234" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">apparaître les données</text>
+  <text x="266" y="253" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">manquantes ou aberrantes.</text><rect x="266" y="278" width="200" height="24" rx="4" fill="#F7FAFD" stroke="none" stroke-width="1"/><text x="366" y="295" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#0067B9">contrôle qualité</text><path d="M485,188 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="496" y="72" width="236" height="246" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="496" y="72" width="236" height="3" rx="1.5" fill="#C8701A" stroke="none" stroke-width="1"/><circle cx="526" cy="102" r="12" fill="#C8701A"/><text x="526" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">3</text><text x="548" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Base Historique</text><line x1="514" y1="126" x2="714" y2="126" stroke="#CFCDC9"/><text x="514" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">La mémoire mensuelle, par</text>
+  <text x="514" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">site, produit et période.</text>
+  <text x="514" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">C’est ici, et non dans le</text>
+  <text x="514" y="205" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">PCDD, qu’est calculée la</text>
+  <text x="514" y="224" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">consommation ajustée.</text><rect x="514" y="278" width="200" height="24" rx="4" fill="#FBF0E3" stroke="none" stroke-width="1"/><text x="614" y="295" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#C8701A">consommation ajustée</text><path d="M733,188 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="744" y="72" width="236" height="246" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="744" y="72" width="236" height="3" rx="1.5" fill="#2E7D4F" stroke="none" stroke-width="1"/><circle cx="774" cy="102" r="12" fill="#2E7D4F"/><text x="774" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">4</text><text x="796" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">PCDD</text><line x1="762" y1="126" x2="962" y2="126" stroke="#CFCDC9"/><text x="762" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Sélectionne les mois de</text>
+  <text x="762" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">référence, en fait la</text>
+  <text x="762" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">moyenne, rapproche des</text>
+  <text x="762" y="205" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">bons de commande et des</text>
+  <text x="762" y="224" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">stocks, et permet</text>
+  <text x="762" y="243" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">l’arbitrage.</text><rect x="762" y="278" width="200" height="24" rx="4" fill="#E7F2EC" stroke="none" stroke-width="1"/><text x="862" y="295" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#2E7D4F">CMMA et arbitrage</text>
+  <rect x="0" y="332" width="980" height="70" rx="5" fill="#FAE5E9" stroke="none" stroke-width="1"/><rect x="0" y="332" width="5" height="70" rx="0" fill="#BA0C2F" stroke="none" stroke-width="1"/><g transform="translate(24,355) scale(1.05)" fill="none" stroke="#BA0C2F" stroke-width="2.2"><path d="M12 4.2 2.9 19.4h18.2L12 4.2Z" stroke-linejoin="round"/><path d="M12 10v4.2" stroke-linecap="round"/><circle cx="12" cy="16.9" r="1" fill="currentColor" stroke="none"/></g><text x="64" y="362.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A"><tspan font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="16.5" fill="#BA0C2F">Une donnée absente ou erronée dans DHIS2 : </tspan>elle se propage jusqu’au PCDD et ne peut pas y être</text><text x="64" y="383.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">corrigée. La correction se fait à la source, puis se répercute à l’actualisation suivante.</text>
+  
+</svg><figcaption>Le circuit des données, de la formation sanitaire au PCDD.</figcaption></figure>
+<h3 id="h-les-quatre-maillons-de-la-chaine">Les quatre maillons de la chaîne</h3>
+<p>Le PCDD ne collecte aucune donnée par lui-même : il exploite des données produites en amont par une chaîne de trois outils successifs. Comprendre cette chaîne est essentiel car, lorsqu’une valeur affichée dans le PCDD paraît erronée, la correction doit presque toujours être apportée en amont, et non dans le Module PCDD lui-même.</p>
+<ul><li><strong>DHIS2 — la source primaire.</strong> Les données logistiques (stock disponible en début de mois, quantités reçues, quantités consommées, nombre de jours de rupture) sont rapportées par les formations sanitaires, puis extraites au format Excel.</li><li><strong>Le Module de Visualisation — le contrôle qualité.</strong> L’extraction DHIS2 y est importée puis contrôlée : le module calcule les taux de complétude et permet d’identifier les données manquantes ou aberrantes avant qu’elles n’alimentent les calculs.</li><li><strong>La Base Historique — la mémoire et les calculs de base.</strong> Ce fichier conserve l’historique mensuel par site, par produit et par période. C’est à ce niveau, et non dans le PCDD, que sont calculées la consommation ajustée et la classification saisonnière de chaque mois.</li><li><strong>Le PCDD — l’exploitation et l’arbitrage.</strong> Le PCDD se connecte automatiquement à la Base Historique. Il n’y recalcule pas les consommations : il sélectionne les mois de référence pertinents, en établit la moyenne — la CMMA —, rapproche celle-ci des bons de commande et des stocks disponibles au district, et permet l’arbitrage des quantités à distribuer.</li></ul>
+<h3 id="h-trois-consequences-pratiques">Trois conséquences pratiques</h3>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">La correction se fait toujours en amont</span></div><div class="bd"><p>Une donnée absente ou erronée dans DHIS2 se propage jusqu’au PCDD et ne peut pas y être corrigée. La correction s’effectue à la source, puis se répercute lors de l’actualisation suivante.</p></div></div>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">L’ordre des opérations ne peut pas être inversé</span></div><div class="bd"><p>Le PCDD n’affiche des CMMA à jour que si la Base Historique a elle-même été mise à jour au préalable.</p></div></div>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Où poser la question</span></div><div class="bd"><p>Toute question portant sur une consommation ajustée ou sur le caractère saisonnier d’un mois relève de la Base Historique, et non du Module PCDD.</p></div></div>
+  
+</section>
+
+<section id="s05">
+  <span class="sec-num">05</span>
+  <h2>Méthodologie de calcul de la CMMA</h2>
+<p class="lede">La Consommation Moyenne Mensuelle Ajustée est le principal élément utilisé par le PCDD pour évaluer les besoins des formations sanitaires et déterminer les quantités à distribuer. Elle donne une estimation plus représentative de la consommation mensuelle en tenant compte des situations ayant affecté la consommation observée, au premier rang desquelles les ruptures de stock.</p>
+<h3 id="h-ce-qu-est-la-cmma">Ce qu’est la CMMA</h3>
+<p>La CMMA correspond à une estimation de la consommation mensuelle moyenne d’un produit pour une formation sanitaire, après prise en compte des situations pouvant avoir influencé la consommation réellement observée. Elle constitue une donnée de référence importante pour le PCDD, car elle permet de :</p>
+<ul><li>mesurer le niveau de besoin d’une formation sanitaire ;</li><li>apprécier le niveau de stock disponible par rapport à la consommation ;</li><li>déterminer le niveau de stock souhaité ;</li><li>calculer les quantités pouvant être distribuées ;</li><li>contribuer à l’optimisation des allocations entre les différentes formations sanitaires.</li></ul>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Ce n’est pas une moyenne arithmétique</span></div><div class="bd"><p>La CMMA ne doit pas être considérée comme une simple moyenne des consommations enregistrées. Dans certaines situations, la consommation observée doit être ajustée afin de mieux représenter la consommation qui aurait été enregistrée en l’absence de rupture de stock.</p></div></div>
+<h3 id="h-la-consommation-ajustee">La consommation ajustée</h3>
+<p>Lorsqu’un produit est en rupture pendant une partie du mois, la quantité consommée ce mois-là est inférieure à la consommation réelle que la formation sanitaire aurait enregistrée si le produit avait été disponible pendant toute la période. La consommation observée est donc ramenée à un mois entier de disponibilité.</p>
+<figure class="fig"><svg viewBox="0 0 980 432" role="img" aria-label="La consommation ajustée" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">La consommation ajustée</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">Ramener la consommation observée à ce qu’elle aurait été sur un mois entier de disponibilité.</text>
+  <rect x="0" y="72" width="980" height="66" rx="5" fill="#FBF0E3" stroke="none" stroke-width="1"/><rect x="0" y="72" width="5" height="66" rx="0" fill="#C8701A" stroke="none" stroke-width="1"/><g transform="translate(24,93) scale(1.05)" fill="none" stroke="#C8701A" stroke-width="2.2"><path d="M9.2 17.4h5.6M10 20.3h4M12 3.2a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3.2Z" stroke-linecap="round" stroke-linejoin="round"/></g><text x="64" y="111" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="400" letter-spacing="0" fill="#1C1B1A">Consommation ajustée = Consommation observée × Jours du mois ÷ (Jours du mois − Jours de rupture)</text>
+  <rect x="0" y="152" width="980" height="24" rx="4" fill="#F0F0ED" stroke="#CFCDC9" stroke-width="1"/><text x="490" y="169" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.5" font-weight="700" letter-spacing="0" fill="#002F6C">CSI BADO — ARTEMETHER / LUMÉFANTRINE P12_GSM</text><text x="970" y="169" text-anchor="end" font-family="Consolas, Menlo, monospace" font-size="10" font-weight="400" letter-spacing="0" fill="#6C6463">Base Historique</text><rect x="0" y="176" width="980" height="28" rx="3" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="78.5" y="194" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0" fill="#FFFFFF">Mois</text><text x="225.5" y="194" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0" fill="#FFFFFF">Jours du mois</text><text x="367.5" y="194" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0" fill="#FFFFFF">Jours de rupture</text><text x="514.5" y="194" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0" fill="#FFFFFF">Jours disponibles</text><text x="681" y="194" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0" fill="#FFFFFF">Consommation observée</text><text x="877" y="194" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="0" fill="#FFFFFF">Consommation ajustée</text><rect x="0" y="204" width="980" height="26" rx="0" fill="#FFFFFF" stroke="none" stroke-width="1"/><line x1="0" y1="230" x2="980" y2="230" stroke="#CFCDC9"/><text x="10" y="221" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">Juillet 2025</text><text x="225.5" y="221" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">31</text><text x="367.5" y="221" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">0</text><text x="514.5" y="221" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">31</text><text x="681" y="221" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">9</text><rect x="779" y="207" width="196" height="20" rx="2" fill="#E4EFF9" stroke="none" stroke-width="1"/><text x="877" y="221" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="700" letter-spacing="0" fill="#002F6C">9</text><rect x="0" y="230" width="980" height="26" rx="0" fill="#F0F0ED" stroke="none" stroke-width="1"/><line x1="0" y1="256" x2="980" y2="256" stroke="#CFCDC9"/><text x="10" y="247" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">Août 2025</text><text x="225.5" y="247" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">31</text><text x="367.5" y="247" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">10</text><text x="514.5" y="247" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">21</text><text x="681" y="247" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">55</text><rect x="779" y="233" width="196" height="20" rx="2" fill="#E4EFF9" stroke="none" stroke-width="1"/><text x="877" y="247" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="700" letter-spacing="0" fill="#002F6C">81</text><rect x="0" y="256" width="980" height="26" rx="0" fill="#FFFFFF" stroke="none" stroke-width="1"/><line x1="0" y1="282" x2="980" y2="282" stroke="#CFCDC9"/><text x="10" y="273" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">Septembre 2025</text><text x="225.5" y="273" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">30</text><text x="367.5" y="273" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">20</text><text x="514.5" y="273" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">10</text><text x="681" y="273" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="400" letter-spacing="0" fill="#403D3C">30</text><rect x="779" y="259" width="196" height="20" rx="2" fill="#E4EFF9" stroke="none" stroke-width="1"/><text x="877" y="273" text-anchor="middle" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="11.8" font-weight="700" letter-spacing="0" fill="#002F6C">90</text><rect x="774" y="176" width="206" height="106" rx="3" fill="none" stroke="#0067B9" stroke-width="2"/>
+  <rect x="0" y="296" width="316" height="136" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="296" width="316" height="3" rx="1.5" fill="#2E7D4F" stroke="none" stroke-width="1"/><text x="18" y="331" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Aucune rupture</text><line x1="18" y1="350" x2="298" y2="350" stroke="#CFCDC9"/><g transform="translate(18,356) scale(0.92)" fill="none" stroke="#2E7D4F" stroke-width="2"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="3"/><path d="M8 12.2l2.8 2.8L16.4 9.4" stroke-linecap="round" stroke-linejoin="round"/></g><text x="52" y="372" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">La consommation ajustée est</text>
+  <text x="52" y="391" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">égale à la consommation</text>
+  <text x="52" y="410" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">observée.</text><rect x="332" y="296" width="316" height="136" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="332" y="296" width="316" height="3" rx="1.5" fill="#BA0C2F" stroke="none" stroke-width="1"/><text x="350" y="331" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Mois entier en rupture</text><line x1="350" y1="350" x2="630" y2="350" stroke="#CFCDC9"/><g transform="translate(350,356) scale(0.92)" fill="none" stroke="#BA0C2F" stroke-width="2"><path d="M12 4.2 2.9 19.4h18.2L12 4.2Z" stroke-linejoin="round"/><path d="M12 10v4.2" stroke-linecap="round"/><circle cx="12" cy="16.9" r="1" fill="currentColor" stroke="none"/></g><text x="384" y="372" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Aucun ajustement n’est appliqué</text>
+  <text x="384" y="391" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">: la consommation observée est</text>
+  <text x="384" y="410" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">retenue telle quelle.</text><rect x="664" y="296" width="316" height="136" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="664" y="296" width="316" height="3" rx="1.5" fill="#BA0C2F" stroke="none" stroke-width="1"/><text x="682" y="331" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Consommation nulle ou absente</text><line x1="682" y1="350" x2="962" y2="350" stroke="#CFCDC9"/><g transform="translate(682,356) scale(0.92)" fill="none" stroke="#BA0C2F" stroke-width="2"><path d="M12 4.2 2.9 19.4h18.2L12 4.2Z" stroke-linejoin="round"/><path d="M12 10v4.2" stroke-linecap="round"/><circle cx="12" cy="16.9" r="1" fill="currentColor" stroke="none"/></g><text x="716" y="372" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Le mois est écarté du calcul. Il</text>
+  <text x="716" y="391" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">ne fait pas baisser la CMMA.</text>
+  
+</svg><figcaption>La formule, et son application aux trois mois de référence du CSI Bado.</figcaption></figure>
+<p>Le calcul est effectué dans la Base Historique, colonne « Consommation ajusté », et non dans le PCDD. Pour août — 31 jours, dont 10 de rupture — on obtient 55 × 31 ÷ 21 ≈ 81. Pour septembre — 30 jours, dont 20 de rupture — 30 × 30 ÷ 10 = 90.</p>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">L’ajustement n’est pas plafonné</span></div><div class="bd"><p>L’ajustement est un rapport, et il croît rapidement lorsque la rupture s’approche du mois complet : 20 jours de rupture sur 30 multiplient la consommation par 3, 25 jours par 6, 29 jours par 30. Sur les données d’Illéla, 89 % des mois exploitables ne font l’objet d’aucun ajustement et 3,5 % sont multipliés par 2 ou davantage ; onze lignes dépassent le facteur 10.</p><p>La valeur produite reste statistiquement fragile lorsqu’elle repose sur quelques jours de disponibilité. Il appartient à l’officier d’en tenir compte dans la lecture des CMMA élevées.</p></div></div>
+<h3 id="h-de-la-consommation-ajustee-a-la-cmma">De la consommation ajustée à la CMMA</h3>
+<p>Pour chaque formation sanitaire et chaque produit, le PCDD recherche dans la Base Historique les consommations ajustées des mois de référence, puis en établit la moyenne.</p>
+<figure class="fig"><svg viewBox="0 0 980 303" role="img" aria-label="De la consommation ajustée à la CMMA" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">De la consommation ajustée à la CMMA</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">La moyenne des mois de référence exploitables — et l’écart que l’ajustement produit.</text>
+  <rect x="0" y="72" width="484" height="126" rx="4" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="72" width="484" height="24" rx="4" fill="#F0F0ED" stroke="#CFCDC9" stroke-width="1"/><text x="242" y="89" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.5" font-weight="700" letter-spacing="0" fill="#002F6C">MOYENNE DES CONSOMMATIONS OBSERVÉES</text><line x1="0" y1="121" x2="484" y2="121" stroke="#CFCDC9"/><text x="10" y="114" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="400" letter-spacing="0" fill="#403D3C">Juillet</text><text x="472" y="114" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">9</text><line x1="0" y1="144" x2="484" y2="144" stroke="#CFCDC9"/><text x="10" y="137" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="400" letter-spacing="0" fill="#403D3C">Août</text><text x="472" y="137" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">55</text><line x1="0" y1="167" x2="484" y2="167" stroke="#CFCDC9"/><text x="10" y="160" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="400" letter-spacing="0" fill="#403D3C">Septembre</text><text x="472" y="160" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">30</text><rect x="1" y="167" width="482" height="23" rx="0" fill="#E4EFF9" stroke="none" stroke-width="1"/><line x1="0" y1="190" x2="484" y2="190" stroke="#CFCDC9"/><text x="10" y="183" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#1C1B1A">Moyenne</text><text x="472" y="183" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">31</text><rect x="496" y="72" width="484" height="126" rx="4" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="496" y="72" width="484" height="24" rx="4" fill="#F0F0ED" stroke="#CFCDC9" stroke-width="1"/><text x="738" y="89" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.5" font-weight="700" letter-spacing="0" fill="#002F6C">MOYENNE DES CONSOMMATIONS AJUSTÉES</text><line x1="496" y1="121" x2="980" y2="121" stroke="#CFCDC9"/><text x="506" y="114" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="400" letter-spacing="0" fill="#403D3C">Juillet</text><text x="968" y="114" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">9</text><line x1="496" y1="144" x2="980" y2="144" stroke="#CFCDC9"/><text x="506" y="137" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="400" letter-spacing="0" fill="#403D3C">Août</text><text x="968" y="137" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">81</text><line x1="496" y1="167" x2="980" y2="167" stroke="#CFCDC9"/><text x="506" y="160" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="400" letter-spacing="0" fill="#403D3C">Septembre</text><text x="968" y="160" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">90</text><rect x="497" y="167" width="482" height="23" rx="0" fill="#E4EFF9" stroke="none" stroke-width="1"/><line x1="496" y1="190" x2="980" y2="190" stroke="#CFCDC9"/><text x="506" y="183" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#1C1B1A">CMMA retenue</text><text x="968" y="183" text-anchor="end" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.2" font-weight="700" letter-spacing="0" fill="#002F6C">60</text>
+  <rect x="0" y="212" width="980" height="91" rx="5" fill="#F7FAFD" stroke="none" stroke-width="1"/><rect x="0" y="212" width="5" height="91" rx="0" fill="#0067B9" stroke="none" stroke-width="1"/><g transform="translate(24,245.5) scale(1.05)" fill="none" stroke="#0067B9" stroke-width="2.2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></g><text x="64" y="242.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A"><tspan font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="16.5" fill="#0067B9">Soit presque le double : </tspan>la CMMA de ce CSI pour ce produit est de 60 traitements par mois, contre 31</text><text x="64" y="263.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">si l’on s’en tenait aux quantités effectivement consommées. C’est l’effet des 30 jours de rupture</text><text x="64" y="284.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">cumulés sur le trimestre.</text>
+  
+</svg><figcaption>L’écart entre moyenne observée et moyenne ajustée, sur le même exemple.</figcaption></figure>
+<p>Sur la base de ces trois mois, la consommation moyenne mensuelle ajustée du produit pour le CSI Bado est d’environ 60 unités.</p>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Pourquoi l’ajustement compte</span></div><div class="bd"><p>Si l’on avait utilisé uniquement les quantités consommées observées, la moyenne aurait été de 31 unités par mois, alors que la moyenne fondée sur les consommations ajustées est d’environ 60. Négliger les ruptures revient à sous-estimer le besoin de près de moitié.</p></div></div>
+<h3 id="h-les-mois-de-reference-et-la-saisonnalite">Les mois de référence et la saisonnalité</h3>
+<p>La consommation des intrants antipaludiques varie fortement selon la période de l’année. Le PCDD applique donc une logique de saisonnalité, afin que la CMMA d’une période donnée ne repose pas sur des mois au comportement saisonnier différent.</p>
+<figure class="fig"><svg viewBox="0 0 980 347" role="img" aria-label="Quels mois servent de référence" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">Quels mois servent de référence</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">Juin ne peut pas prédire juillet : au début de chaque saison, le PCDD se reporte sur l’année précédente.</text>
+  <rect x="0" y="72" width="316" height="170" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="72" width="316" height="3" rx="1.5" fill="#0067B9" stroke="none" stroke-width="1"/><text x="18" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Janvier, février, mars</text><line x1="18" y1="126" x2="298" y2="126" stroke="#CFCDC9"/><g transform="translate(18,132) scale(0.92)" fill="none" stroke="#0067B9" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></g><text x="52" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Référence : janvier, février et</text>
+  <text x="52" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">mars de l’année précédente.</text><rect x="18" y="202" width="280" height="24" rx="4" fill="#F7FAFD" stroke="none" stroke-width="1"/><text x="158" y="219" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#0067B9">début de faible transmission</text><rect x="332" y="72" width="316" height="170" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="332" y="72" width="316" height="3" rx="1.5" fill="#C8701A" stroke="none" stroke-width="1"/><text x="350" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Juillet, août, septembre</text><line x1="350" y1="126" x2="630" y2="126" stroke="#CFCDC9"/><g transform="translate(350,132) scale(0.92)" fill="none" stroke="#C8701A" stroke-width="2"><path d="M9.2 17.4h5.6M10 20.3h4M12 3.2a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3.2Z" stroke-linecap="round" stroke-linejoin="round"/></g><text x="384" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Référence : juillet, août et</text>
+  <text x="384" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">septembre de l’année précédente.</text><rect x="350" y="202" width="280" height="24" rx="4" fill="#FBF0E3" stroke="none" stroke-width="1"/><text x="490" y="219" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#C8701A">début de forte transmission</text><rect x="664" y="72" width="316" height="170" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="664" y="72" width="316" height="3" rx="1.5" fill="#2E7D4F" stroke="none" stroke-width="1"/><text x="682" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Les six autres mois</text><line x1="682" y1="126" x2="962" y2="126" stroke="#CFCDC9"/><g transform="translate(682,132) scale(0.92)" fill="none" stroke="#2E7D4F" stroke-width="2"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="3"/><path d="M8 12.2l2.8 2.8L16.4 9.4" stroke-linecap="round" stroke-linejoin="round"/></g><text x="716" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Référence : les trois mois qui</text>
+  <text x="716" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">précèdent, dans l’année en</text>
+  <text x="716" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">cours.</text><rect x="682" y="202" width="280" height="24" rx="4" fill="#E7F2EC" stroke="none" stroke-width="1"/><text x="822" y="219" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#2E7D4F">saison déjà engagée</text>
+  <rect x="0" y="256" width="980" height="91" rx="5" fill="#FBF0E3" stroke="none" stroke-width="1"/><rect x="0" y="256" width="5" height="91" rx="0" fill="#C8701A" stroke="none" stroke-width="1"/><g transform="translate(24,289.5) scale(1.05)" fill="none" stroke="#C8701A" stroke-width="2.2"><path d="M9.2 17.4h5.6M10 20.3h4M12 3.2a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3.2Z" stroke-linecap="round" stroke-linejoin="round"/></g><text x="64" y="286.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A"><tspan font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="16.5" fill="#C8701A">Deux saisons pour les intrants antipaludiques : </tspan>janvier à juin en faible transmission, juillet à</text><text x="64" y="307.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">décembre en forte. Les volumes distribués n’y sont pas comparables, et une moyenne qui enjamberait la</text><text x="64" y="328.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">bascule serait trompeuse.</text>
+  
+</svg><figcaption>La règle de sélection des mois de référence, selon le mois traité.</figcaption></figure>
+<p>Cette logique évite de comparer des périodes dont les niveaux de consommation ne sont pas comparables, et donne une estimation plus pertinente de la consommation attendue.</p>
+<h3 id="h-donnees-manquantes-et-repli-sur-l-annee-pr">Données manquantes et repli sur l’année précédente</h3>
+<p>Le PCDD calcule la CMMA à partir des consommations ajustées disponibles pour les périodes de référence retenues. Les données manquantes sont ignorées et ne sont pas assimilées à une consommation nulle : la moyenne peut donc être calculée sur trois, deux ou un seul mois de données.</p>
+<figure class="fig"><svg viewBox="0 0 980 364" role="img" aria-label="Quand les données manquent" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">Quand les données manquent</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">Le PCDD n’assimile jamais une donnée absente à une consommation nulle.</text>
+  <rect x="0" y="72" width="318.6666666666667" height="208" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="72" width="318.6666666666667" height="3" rx="1.5" fill="#2E7D4F" stroke="none" stroke-width="1"/><circle cx="30" cy="102" r="12" fill="#2E7D4F"/><text x="30" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">1</text><text x="52" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Au moins un mois exploitable</text><line x1="18" y1="126" x2="300.6666666666667" y2="126" stroke="#CFCDC9"/><text x="18" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">La CMMA est la moyenne des mois</text>
+  <text x="18" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">disponibles — trois, deux, ou un</text>
+  <text x="18" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">seul. Les mois absents et les mois à</text>
+  <text x="18" y="205" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">consommation nulle sont ignorés.</text><rect x="18" y="240" width="282.6666666666667" height="24" rx="4" fill="#E7F2EC" stroke="none" stroke-width="1"/><text x="159.33333333333334" y="257" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#2E7D4F">cas courant</text><path d="M319.6666666666667,169 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="330.6666666666667" y="72" width="318.6666666666667" height="208" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="330.6666666666667" y="72" width="318.6666666666667" height="3" rx="1.5" fill="#C8701A" stroke="none" stroke-width="1"/><circle cx="360.6666666666667" cy="102" r="12" fill="#C8701A"/><text x="360.6666666666667" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">2</text><text x="382.6666666666667" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Aucun mois exploitable</text><line x1="348.6666666666667" y1="126" x2="631.3333333333334" y2="126" stroke="#CFCDC9"/><text x="348.6666666666667" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Le PCDD retient la consommation</text>
+  <text x="348.6666666666667" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">moyenne ajustée de la même saison</text>
+  <text x="348.6666666666667" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">l’année précédente : faible</text>
+  <text x="348.6666666666667" y="205" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">transmission ou forte transmission,</text>
+  <text x="348.6666666666667" y="224" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">selon le mois traité.</text><rect x="348.6666666666667" y="240" width="282.6666666666667" height="24" rx="4" fill="#FBF0E3" stroke="none" stroke-width="1"/><text x="490" y="257" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#C8701A">repli N−1</text><path d="M650.3333333333334,169 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="661.3333333333334" y="72" width="318.6666666666667" height="208" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="661.3333333333334" y="72" width="318.6666666666667" height="3" rx="1.5" fill="#BA0C2F" stroke="none" stroke-width="1"/><circle cx="691.3333333333334" cy="102" r="12" fill="#BA0C2F"/><text x="691.3333333333334" y="106.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">3</text><text x="713.3333333333334" y="107" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Aucune référence disponible</text><line x1="679.3333333333334" y1="126" x2="962" y2="126" stroke="#CFCDC9"/><text x="679.3333333333334" y="148" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Le PCDD l’affiche explicitement</text>
+  <text x="679.3333333333334" y="167" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">plutôt que d’avancer un chiffre.</text>
+  <text x="679.3333333333334" y="186" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">L’officier arbitre alors sans</text>
+  <text x="679.3333333333334" y="205" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">référence de consommation.</text><rect x="679.3333333333334" y="240" width="282.6666666666667" height="24" rx="4" fill="#FAE5E9" stroke="none" stroke-width="1"/><text x="820.6666666666667" y="257" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#BA0C2F">« CMMA non disp »</text>
+  <rect x="0" y="294" width="980" height="70" rx="5" fill="#F7FAFD" stroke="none" stroke-width="1"/><rect x="0" y="294" width="5" height="70" rx="0" fill="#0067B9" stroke="none" stroke-width="1"/><g transform="translate(24,317) scale(1.05)" fill="none" stroke="#0067B9" stroke-width="2.2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></g><text x="64" y="324.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A"><tspan font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="16.5" fill="#0067B9">Un point de méthode : </tspan>un mois sans consommation est traité comme un mois sans donnée. Ce choix évite</text><text x="64" y="345.5" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#1C1B1A">qu’une rupture prolongée ou un défaut de rapportage ne minore artificiellement les besoins estimés.</text>
+  
+</svg><figcaption>La cascade appliquée lorsque les mois de référence ne sont pas exploitables.</figcaption></figure>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Les mois à consommation nulle</span></div><div class="bd"><p>Lorsqu’aucune consommation n’est enregistrée pour un produit au cours d’un mois, la donnée est traitée comme une donnée manquante : elle n’entre pas dans le calcul de la moyenne. Un mois sans consommation ne fait donc pas baisser la CMMA.</p><p>Ce choix évite qu’une rupture prolongée ou un défaut de rapportage ne minore artificiellement les besoins estimés. Il implique en contrepartie que la CMMA reflète la consommation des mois durant lesquels le produit a effectivement été consommé, et non une moyenne calculée sur l’ensemble du calendrier.</p></div></div>
+  
+</section>
+
+<section id="s06">
+  <span class="sec-num">06</span>
+  <h2>Utilisation du PCDD</h2>
+<p class="lede">L’interface d’accueil constitue la porte d’entrée du système. Elle donne accès aux trois volets du Module, selon l’étape du processus à réaliser.</p>
+<figure class="fig"><svg viewBox="0 0 980 331" role="img" aria-label="L’interface d’accueil" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect x="0" y="0" width="980" height="58" rx="4" fill="#002F6C" stroke="#002F6C" stroke-width="1"/><text x="22" y="26" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="20.5" font-weight="700" letter-spacing="0" fill="#FFFFFF">L’interface d’accueil</text><text x="22" y="46" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-style="italic" fill="#BFD4EC">Les trois portes d’entrée du fichier, dans l’ordre du processus.</text>
+  <rect x="0" y="72" width="980" height="56" rx="4" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><text x="18" y="98" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#002F6C">PCDD — PLAN DE CONTRÔLE DE DISTRIBUTION DES DISTRICTS</text><text x="18" y="116" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="12.5" font-weight="400" letter-spacing="0" fill="#BA0C2F">Ds Illéla  ·  Octobre 2026</text>
+  <rect x="0" y="142" width="318.6666666666667" height="189" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="0" y="142" width="318.6666666666667" height="3" rx="1.5" fill="#0067B9" stroke="none" stroke-width="1"/><circle cx="30" cy="172" r="12" fill="#0067B9"/><text x="30" y="176.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">1</text><text x="52" y="177" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Saisie BC</text><line x1="18" y1="196" x2="300.6666666666667" y2="196" stroke="#CFCDC9"/><text x="18" y="218" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Saisie des bons de commande des CSI.</text>
+  <text x="18" y="237" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Le PCDD y affiche la CMMA, le stock</text>
+  <text x="18" y="256" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">disponible et la couverture en mois</text>
+  <text x="18" y="275" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">de stock.</text><rect x="18" y="291" width="282.6666666666667" height="24" rx="4" fill="#F7FAFD" stroke="none" stroke-width="1"/><text x="159.33333333333334" y="308" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#0067B9">feuille CMM&amp;Saisie_BC</text><path d="M319.6666666666667,229.5 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="330.6666666666667" y="142" width="318.6666666666667" height="189" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="330.6666666666667" y="142" width="318.6666666666667" height="3" rx="1.5" fill="#0067B9" stroke="none" stroke-width="1"/><circle cx="360.6666666666667" cy="172" r="12" fill="#0067B9"/><text x="360.6666666666667" y="176.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">2</text><text x="382.6666666666667" y="177" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Pilotage PCDD</text><line x1="348.6666666666667" y1="196" x2="631.3333333333334" y2="196" stroke="#CFCDC9"/><text x="348.6666666666667" y="218" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Paramétrage de la distribution et</text>
+  <text x="348.6666666666667" y="237" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">arbitrage des quantités à livrer,</text>
+  <text x="348.6666666666667" y="256" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">produit par produit.</text><rect x="348.6666666666667" y="291" width="282.6666666666667" height="24" rx="4" fill="#F7FAFD" stroke="none" stroke-width="1"/><text x="490" y="308" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#0067B9">feuille Pilotage_PCDD</text><path d="M650.3333333333334,229.5 l7,7 -7,7" fill="none" stroke="#CFCDC9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="661.3333333333334" y="142" width="318.6666666666667" height="189" rx="5" fill="#FFFFFF" stroke="#CFCDC9" stroke-width="1"/><rect x="661.3333333333334" y="142" width="318.6666666666667" height="3" rx="1.5" fill="#2E7D4F" stroke="none" stroke-width="1"/><circle cx="691.3333333333334" cy="172" r="12" fill="#2E7D4F"/><text x="691.3333333333334" y="176.56" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="12.96" font-weight="700" letter-spacing="0" fill="#FFFFFF">3</text><text x="713.3333333333334" y="177" text-anchor="start" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="15.5" font-weight="700" letter-spacing="0" fill="#1C1B1A">Rapport</text><line x1="679.3333333333334" y1="196" x2="962" y2="196" stroke="#CFCDC9"/><text x="679.3333333333334" y="218" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">Consultation des résultats, édition</text>
+  <text x="679.3333333333334" y="237" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">du rapport de distribution et accès à</text>
+  <text x="679.3333333333334" y="256" text-anchor="start" font-family="Calibri, Carlito, Source Sans 3, Inter, Helvetica Neue, Arial, sans-serif" font-size="14.5" font-weight="400" letter-spacing="0" fill="#403D3C">l’historique des rapports archivés.</text><rect x="679.3333333333334" y="291" width="282.6666666666667" height="24" rx="4" fill="#E7F2EC" stroke="none" stroke-width="1"/><text x="820.6666666666667" y="308" text-anchor="middle" font-family="Gill Sans MT, Gill Sans, Source Sans 3, Inter, Carlito, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0" fill="#2E7D4F">rapports et archivage</text>
+  
+</svg><figcaption>Les trois modules accessibles depuis l’accueil.</figcaption></figure>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Où trouver les procédures</span></div><div class="bd"><p>Le Guide d’utilisation décrit en détail les étapes du workflow, les règles de saisie et le rôle des différentes feuilles. La présente note expose les principes et la logique générale du système ; pour les instructions opérationnelles pas à pas, l’utilisateur doit se référer au Guide d’utilisation.</p></div></div>
+  
+</section>
+
+<section id="s07">
+  <span class="sec-num">07</span>
+  <h2>Prérequis techniques et installation</h2>
+<p class="lede">La liaison entre le PCDD et la Base Historique repose sur un chemin d’accès enregistré à l’intérieur du Module PCDD : celui-ci recherche la Base Historique à un emplacement précis du poste de travail.</p>
+<p>Si la Base Historique ne s’y trouve pas — parce qu’il a été déplacé, renommé, ou parce que le PCDD a été installé sur un nouveau poste —, l’actualisation échoue et les valeurs affichées demeurent celles de la dernière actualisation réussie. Les règles suivantes doivent par conséquent être respectées :</p>
+<ul><li>la Base Historique doit être installée sur chaque poste utilisant le PCDD, à un emplacement standard identique d’un district à l’autre ;</li><li>le fichier de la Base Historique ne doit être ni renommé ni déplacé une fois installé ;</li><li>lors de la transmission du PCDD à un nouveau district, le chemin d’accès enregistré doit être vérifié et, le cas échéant, mis à jour depuis le menu *Données ▸ Requêtes et connexions*.</li></ul>
+<div class="note"><div class="hd"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4" stroke-linecap="round"/><circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none"/></svg><span class="lbl">Un échec d’actualisation ne bloque rien</span></div><div class="bd"><p>Le PCDD s’ouvre normalement et continue d’afficher les dernières données correctement chargées. Il est donc recommandé de vérifier que l’actualisation s’est déroulée sans message d’erreur avant d’engager une session de distribution, faute de quoi l’arbitrage risquerait d’être conduit sur des CMMA périmées.</p></div></div>
+  
+</section>
+
+<section id="s08">
+  <span class="sec-num">08</span>
+  <h2>Glossaire et sigles</h2>
+<p class="lede">Les sigles et notions ci-dessous sont utilisés tout au long de la documentation du PCDD.</p>
+<div class="tw"><table><thead><tr><th>Sigle</th><th>Définition</th></tr></thead><tbody><tr><td><strong>BC</strong></td><td>Bon de Commande établi par la formation sanitaire.</td></tr><tr><td><strong>CMM</strong></td><td>Consommation Moyenne Mensuelle : moyenne des quantités consommées sur une période de référence.</td></tr><tr><td><strong>CMMA</strong></td><td>Consommation Moyenne Mensuelle Ajustée : consommation moyenne corrigée pour tenir compte des jours de rupture de stock.</td></tr><tr><td><strong>Consommation ajustée</strong></td><td>Consommation d’un mois donné ramenée à un mois complet de disponibilité du produit, lorsque celui-ci a connu une rupture.</td></tr><tr><td><strong>CSI</strong></td><td>Centre de Santé Intégré.</td></tr><tr><td><strong>DHIS2</strong></td><td>*District Health Information System 2*, système national d’information sanitaire dont sont extraites les données logistiques.</td></tr><tr><td><strong>DS</strong></td><td>District Sanitaire.</td></tr><tr><td><strong>eSIGL</strong></td><td>Système électronique d’Information de Gestion Logistique, actuellement en cours de déploiement.</td></tr><tr><td><strong>Forte / faible transmission</strong></td><td>Périodes de l’année marquées par des niveaux de consommation très différents pour les intrants antipaludiques : forte transmission de juillet à décembre, faible transmission de janvier à juin.</td></tr><tr><td><strong>HD</strong></td><td>Hôpital de District.</td></tr><tr><td><strong>MdS</strong></td><td>Mois de Stock Disponible : rapport entre le stock disponible et la consommation moyenne mensuelle, exprimé en nombre de mois de couverture.</td></tr><tr><td><strong>PCDD</strong></td><td>Plan de Contrôle de Distribution des Districts.</td></tr><tr><td><strong>PNLP</strong></td><td>Programme National de Lutte contre le Paludisme.</td></tr></tbody></table></div>
+  
+</section>
+
+</main>
+</div>
+</div>
+
+<footer>
+<div class="wrap">
+  <div class="foot-top">
+    <div class="foot-id">
+      <p class="prog">PCDD — Plan de Contrôle de Distribution des Districts</p>
+      <p class="dev">Développé par Chemonics International dans le cadre du projet GHSC-PSM.<br>Développeur : Boubacar Garba. Niger  ·  Novembre 2026.</p>
+    </div>
+    <img class="logo-usa" src="data:image/png;base64,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" alt="United States of America">
+  </div>
+  <p>*Note méthodologique. Les règles de calcul décrites sont celles effectivement appliquées par le classeur ; les exemples chiffrés proviennent de la Base Historique du district d’Illéla.*</p>
+  <p class="foot-legal">Le projet U.S. Government Global Health Supply Chain Program — Procurement and Supply Management (GHSC-PSM) est financé par le gouvernement des États-Unis, contrat n° AID-OAA-I-15-0004. GHSC-PSM est mis en œuvre par Chemonics International. Les opinions exprimées dans ce document ne reflètent pas nécessairement celles de l’Agence des États-Unis pour le développement international ni du gouvernement des États-Unis.</p>
+</div>
+</footer>
+
+
+
+</body>
+</html>

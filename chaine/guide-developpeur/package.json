@@ -1,0 +1,13 @@
+{
+  "name": "pcdd-guide-developpeur",
+  "version": "1.0.0",
+  "description": "Guide développeur du PCDD — source unique, rendus Word et HTML",
+  "private": true,
+  "scripts": {
+    "html": "node render-html.js",
+    "docx": "node render-docx.js",
+    "dist": "node render-html.js && node render-docx.js && python3 wrap.py",
+    "build": "npm run dist"
+  },
+  "dependencies": { "docx": "^9.7.1" }
+}

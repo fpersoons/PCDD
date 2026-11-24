@@ -1,0 +1,339 @@
+
+/* Charte GHSC-PSM / USAID — reprise du gabarit Word officiel du projet
+   rouge BA0C2F · bleu 002F6C · bleu clair 0067B9 · gris 6C6463 / CFCDC9 */
+:root{
+  --ground:#F5F5F3;
+  --surface:#FFFFFF;
+  --surface-2:#F0F0ED;
+  --ink:#1C1B1A;
+  --ink-2:#403D3C;
+  --muted:#6C6463;
+  --line:#DFDEDA;
+  --line-strong:#CFCDC9;
+
+  --rouge:#BA0C2F;          /* USAID red — titres */
+  --rouge-h1:#C2113A;       /* Heading 1 */
+  --rouge-fonce:#651D32;    /* accent 3 */
+  --bleu:#002F6C;           /* USAID blue — Heading 2 */
+  --bleu-clair:#0067B9;     /* accent 1 */
+  --bleu-pale:#A7C6ED;      /* accent 2 */
+
+  --accent:#0067B9;
+  --accent-soft:#E4EFF9;
+  --forte:#BA0C2F;
+  --forte-soft:#FAE5E9;
+  --faible:#0067B9;
+  --faible-soft:#E4EFF9;
+  --danger:#BA0C2F;
+  --danger-soft:#FAE5E9;
+
+  --code-bg:#0E1A2B;
+  --code-ink:#DCE5EF;
+  --code-key:#8FBCEA;
+  --code-str:#E8A0AE;
+  --code-com:#7C8DA3;
+  --shadow:0 1px 2px rgba(28,27,26,.05), 0 8px 24px -16px rgba(28,27,26,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161C;
+    --surface:#181D25;
+    --surface-2:#1E242D;
+    --ink:#E8EAED;
+    --ink-2:#C2C6CC;
+    --muted:#8E9299;
+    --line:#2A313B;
+    --line-strong:#3B434F;
+
+    --rouge:#EE7186;
+    --rouge-h1:#EE7186;
+    --rouge-fonce:#D4899A;
+    --bleu:#8FB6E4;
+    --bleu-clair:#6FA8DC;
+    --bleu-pale:#3C5F86;
+
+    --accent:#6FA8DC;
+    --accent-soft:#152436;
+    --forte:#EE7186;
+    --forte-soft:#2C1720;
+    --faible:#6FA8DC;
+    --faible-soft:#152436;
+    --danger:#EE7186;
+    --danger-soft:#2C1720;
+
+    --code-bg:#0A1017;
+    --code-ink:#DCE5EF;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161C;
+  --surface:#181D25;
+  --surface-2:#1E242D;
+  --ink:#E8EAED;
+  --ink-2:#C2C6CC;
+  --muted:#8E9299;
+  --line:#2A313B;
+  --line-strong:#3B434F;
+
+  --rouge:#EE7186;
+  --rouge-h1:#EE7186;
+  --rouge-fonce:#D4899A;
+  --bleu:#8FB6E4;
+  --bleu-clair:#6FA8DC;
+  --bleu-pale:#3C5F86;
+
+  --accent:#6FA8DC;
+  --accent-soft:#152436;
+  --forte:#EE7186;
+  --forte-soft:#2C1720;
+  --faible:#6FA8DC;
+  --faible-soft:#152436;
+  --danger:#EE7186;
+  --danger-soft:#2C1720;
+
+  --code-bg:#0A1017;
+  --code-ink:#DCE5EF;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:Calibri,"Carlito","Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  font-size:16.5px;
+  line-height:1.58;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui,nav.toc a,th,table,.pill,.sev,.lbl,.trig,.toc-title,.kicker{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3","Helvetica Neue",Arial,sans-serif;
+}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px;align-items:start}
+
+/* ---------- masthead ---------- */
+header.mast{
+  border-top:6px solid var(--rouge);
+  border-bottom:1px solid var(--line-strong);
+  background:var(--surface);
+}
+.mast-inner{padding:30px 0 34px;display:flex;flex-direction:column;gap:16px}
+.logo-ghsc{display:block;width:min(430px,78%);height:auto;margin-bottom:6px}
+:root[data-theme="dark"] .logo-ghsc,
+.logo-usa{background:transparent}
+.kicker{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--bleu);
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.kicker .sep{width:4px;height:4px;border-radius:50%;background:var(--line-strong)}
+h1{
+  font-size:clamp(28px,4.1vw,42px);line-height:1.08;margin:0;
+  font-weight:700;letter-spacing:-.01em;text-wrap:balance;color:var(--rouge);
+}
+.standfirst{
+  font-size:18px;color:var(--ink-2);max-width:76ch;margin:0;
+}
+.mast-meta{
+  display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:4px;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+}
+.mast-meta b{color:var(--ink-2);font-weight:500}
+
+/* ---------- nav ---------- */
+nav.toc{position:sticky;top:24px;padding:36px 0 40px}
+nav.toc .toc-title{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 14px;
+}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{
+  display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:baseline;
+  text-decoration:none;color:var(--ink-2);
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:13.5px;line-height:1.35;
+  padding:6px 8px;border-radius:4px;border-left:2px solid transparent;
+}
+nav.toc a:hover{background:var(--surface);color:var(--accent);border-left-color:var(--accent)}
+nav.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+main{padding:44px 0 120px;min-width:0}
+
+/* ---------- sections ---------- */
+section{margin:0 0 68px;scroll-margin-top:20px}
+section > h2{
+  font-size:clamp(20px,2.5vw,26px);font-weight:700;letter-spacing:-.008em;
+  margin:0 0 6px;text-wrap:balance;color:var(--rouge-h1);
+}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;
+  color:var(--bleu-clair);letter-spacing:.08em;display:block;margin-bottom:10px;
+}
+.lede{color:var(--ink-2);margin:0 0 26px}
+h3{font-size:17.5px;font-weight:700;margin:34px 0 10px;letter-spacing:0;color:var(--bleu)}
+h4{font-size:14.5px;font-weight:700;margin:24px 0 8px;color:var(--muted);
+   font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;letter-spacing:.01em}
+p{margin:0 0 14px}
+ul,ol.body{padding-left:20px;margin:0 0 16px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+hr.rule{border:0;border-top:1px solid var(--line);margin:44px 0}
+
+/* ---------- inline code ---------- */
+code{
+  font-size:.855em;background:var(--surface-2);border:1px solid var(--line);
+  padding:.08em .34em;border-radius:3px;color:var(--ink);white-space:nowrap;
+}
+.cell{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+
+/* ---------- code blocks ---------- */
+.code{
+  background:var(--code-bg);border-radius:6px;margin:0 0 20px;overflow:hidden;
+  border:1px solid var(--line);
+}
+.code .cap{
+  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;
+  padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#93A5BC;
+}
+.code .cap b{color:var(--code-key);font-weight:500}
+.code pre{
+  margin:0;padding:14px;overflow-x:auto;
+  font-size:12.6px;line-height:1.62;color:var(--code-ink);
+}
+.code pre code{background:none;border:0;padding:0;white-space:pre;color:inherit;font-size:inherit}
+.k{color:var(--code-key)} .s{color:var(--code-str)} .c{color:var(--code-com);font-style:italic}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.6px;
+      font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;min-width:520px}
+th{
+  text-align:left;font-weight:600;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);padding:11px 14px;border-bottom:1px solid var(--line-strong);
+  background:var(--surface-2);white-space:nowrap;
+}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+td.mono,th.mono{font-family:"IBM Plex Mono",monospace;font-size:12.2px;color:var(--ink)}
+td b{color:var(--ink);font-weight:600}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+
+/* ---------- callouts ---------- */
+.note{
+  border-left:3px solid var(--accent);background:var(--surface);
+  padding:14px 18px;margin:0 0 22px;border-radius:0 5px 5px 0;max-width:84ch;
+}
+.note.warn{border-left-color:var(--forte)}
+.note.stop{border-left-color:var(--danger)}
+.note p:last-child{margin-bottom:0}
+.note .lbl{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:5px;
+}
+.note.warn .lbl{color:var(--forte)}
+.note.stop .lbl{color:var(--danger)}
+
+/* ---------- season pills ---------- */
+.pill{
+  display:inline-block;font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.04em;padding:2px 8px;border-radius:99px;white-space:nowrap;
+}
+.pill.f{background:var(--faible-soft);color:var(--faible)}
+.pill.h{background:var(--forte-soft);color:var(--forte)}
+.pill.a{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- diagram ---------- */
+figure{margin:0 0 26px}
+.diagram{
+  overflow-x:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:6px;padding:22px 20px;
+}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+/* ---------- steps / fiche ---------- */
+.fiche{
+  background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:18px 20px;margin:0 0 16px;box-shadow:var(--shadow);
+}
+.fiche h4{margin:0 0 4px;font-size:14.5px;color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
+.fiche .trig{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;color:var(--muted);margin:0 0 12px}
+.fiche dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13.8px}
+.fiche dt{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.1em;
+          text-transform:uppercase;color:var(--muted);padding-top:4px}
+.fiche dd{margin:0;color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:0 0 22px}
+
+/* ---------- risk list ---------- */
+.risks{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);
+       border-radius:6px;overflow:hidden;background:var(--surface);margin:0 0 22px}
+.risk{display:grid;grid-template-columns:82px 1fr;gap:18px;padding:16px 20px;
+      border-bottom:1px solid var(--line)}
+.risk:last-child{border-bottom:0}
+.risk .sev{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;padding:3px 0;color:var(--danger);
+  border-top:2px solid var(--danger);height:fit-content;
+}
+.risk.med .sev{color:var(--forte);border-top-color:var(--forte)}
+.risk.low .sev{color:var(--muted);border-top-color:var(--line-strong)}
+.risk h4{margin:0 0 6px;font-size:14.5px;color:var(--ink)}
+.risk p{margin:0 0 8px;font-size:14.2px;max-width:80ch}
+.risk p:last-child{margin-bottom:0}
+.risk .fix{font-size:13.4px;color:var(--muted)}
+.risk .fix b{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;letter-spacing:.1em;
+             text-transform:uppercase;color:var(--accent);margin-right:6px}
+
+footer{border-top:3px solid var(--rouge);padding:26px 0 64px;color:var(--muted);font-size:12.6px;line-height:1.5}
+footer p{max-width:78ch;margin:0 0 12px}
+.foot-top{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.foot-id{max-width:52ch}
+.foot-id .prog{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;
+  font-size:13px;font-weight:700;color:var(--bleu);margin:0 0 4px;letter-spacing:.01em;
+}
+.foot-id .dev{margin:0;color:var(--ink-2)}
+.foot-id .dev b{color:var(--ink)}
+.logo-usa{width:220px;height:auto;flex:0 0 auto}
+:root[data-theme="dark"] .logo-usa,
+:root:not([data-theme="light"]) .logo-usa{filter:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .logo-usa,
+  :root:not([data-theme="light"]) .logo-ghsc{background:#FFFFFF;padding:6px 10px;border-radius:3px}
+}
+:root[data-theme="dark"] .logo-usa,
+:root[data-theme="dark"] .logo-ghsc{background:#FFFFFF;padding:6px 10px;border-radius:3px}
+.foot-legal{border-top:1px solid var(--line);padding-top:16px;font-size:11.8px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;padding:26px 0 6px;border-bottom:1px solid var(--line)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0}
+  main{padding-top:30px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- impression / PDF ---------- */
+@media print{
+  :root{ --ground:#FFFFFF; --surface:#FFFFFF; --shadow:none; }
+  @page{margin:14mm 12mm}
+  body{font-size:10.5pt;background:#fff}
+  .wrap{max-width:none;padding:0}
+  .layout{display:block}
+  nav.toc{display:none}
+  main{padding:18px 0 0}
+  section > h2, h3, h4{break-after:avoid-page}
+  .fiche,.note,.code,.tw,figure{break-inside:avoid-page}
+  .tw{overflow:visible}
+  table{min-width:0;font-size:9pt}
+  .code pre{font-size:8.6pt;white-space:pre-wrap;word-break:break-word}
+  a{color:inherit;text-decoration:none}
+}
+
+h4.sub{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:16.5px;font-weight:700;color:var(--ink);margin:22px 0 8px}

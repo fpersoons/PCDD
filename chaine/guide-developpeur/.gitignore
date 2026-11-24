@@ -1,0 +1,6 @@
+node_modules/
+*.pdf
+dist/guide.html
+dist/Guide_developpeur_PCDD.html
+dist/Guide_developpeur_PCDD.docx
+dist/guide.docx

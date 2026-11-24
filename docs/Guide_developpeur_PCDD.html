@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Chemonics International — projet GHSC-PSM">
+<meta name="description" content="Guide développeur du PCDD — novembre 2026.">
+<style>:root{color-scheme:light dark}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<title>Guide développeur PCDD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+
+/* Charte GHSC-PSM / USAID — reprise du gabarit Word officiel du projet
+   rouge BA0C2F · bleu 002F6C · bleu clair 0067B9 · gris 6C6463 / CFCDC9 */
+:root{
+  --ground:#F5F5F3;
+  --surface:#FFFFFF;
+  --surface-2:#F0F0ED;
+  --ink:#1C1B1A;
+  --ink-2:#403D3C;
+  --muted:#6C6463;
+  --line:#DFDEDA;
+  --line-strong:#CFCDC9;
+
+  --rouge:#BA0C2F;          /* USAID red — titres */
+  --rouge-h1:#C2113A;       /* Heading 1 */
+  --rouge-fonce:#651D32;    /* accent 3 */
+  --bleu:#002F6C;           /* USAID blue — Heading 2 */
+  --bleu-clair:#0067B9;     /* accent 1 */
+  --bleu-pale:#A7C6ED;      /* accent 2 */
+
+  --accent:#0067B9;
+  --accent-soft:#E4EFF9;
+  --forte:#BA0C2F;
+  --forte-soft:#FAE5E9;
+  --faible:#0067B9;
+  --faible-soft:#E4EFF9;
+  --danger:#BA0C2F;
+  --danger-soft:#FAE5E9;
+
+  --code-bg:#0E1A2B;
+  --code-ink:#DCE5EF;
+  --code-key:#8FBCEA;
+  --code-str:#E8A0AE;
+  --code-com:#7C8DA3;
+  --shadow:0 1px 2px rgba(28,27,26,.05), 0 8px 24px -16px rgba(28,27,26,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12161C;
+    --surface:#181D25;
+    --surface-2:#1E242D;
+    --ink:#E8EAED;
+    --ink-2:#C2C6CC;
+    --muted:#8E9299;
+    --line:#2A313B;
+    --line-strong:#3B434F;
+
+    --rouge:#EE7186;
+    --rouge-h1:#EE7186;
+    --rouge-fonce:#D4899A;
+    --bleu:#8FB6E4;
+    --bleu-clair:#6FA8DC;
+    --bleu-pale:#3C5F86;
+
+    --accent:#6FA8DC;
+    --accent-soft:#152436;
+    --forte:#EE7186;
+    --forte-soft:#2C1720;
+    --faible:#6FA8DC;
+    --faible-soft:#152436;
+    --danger:#EE7186;
+    --danger-soft:#2C1720;
+
+    --code-bg:#0A1017;
+    --code-ink:#DCE5EF;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12161C;
+  --surface:#181D25;
+  --surface-2:#1E242D;
+  --ink:#E8EAED;
+  --ink-2:#C2C6CC;
+  --muted:#8E9299;
+  --line:#2A313B;
+  --line-strong:#3B434F;
+
+  --rouge:#EE7186;
+  --rouge-h1:#EE7186;
+  --rouge-fonce:#D4899A;
+  --bleu:#8FB6E4;
+  --bleu-clair:#6FA8DC;
+  --bleu-pale:#3C5F86;
+
+  --accent:#6FA8DC;
+  --accent-soft:#152436;
+  --forte:#EE7186;
+  --forte-soft:#2C1720;
+  --faible:#6FA8DC;
+  --faible-soft:#152436;
+  --danger:#EE7186;
+  --danger-soft:#2C1720;
+
+  --code-bg:#0A1017;
+  --code-ink:#DCE5EF;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:Calibri,"Carlito","Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  font-size:16.5px;
+  line-height:1.58;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui,nav.toc a,th,table,.pill,.sev,.lbl,.trig,.toc-title,.kicker{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3","Helvetica Neue",Arial,sans-serif;
+}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px;align-items:start}
+
+/* ---------- masthead ---------- */
+header.mast{
+  border-top:6px solid var(--rouge);
+  border-bottom:1px solid var(--line-strong);
+  background:var(--surface);
+}
+.mast-inner{padding:30px 0 34px;display:flex;flex-direction:column;gap:16px}
+.logo-ghsc{display:block;width:min(430px,78%);height:auto;margin-bottom:6px}
+:root[data-theme="dark"] .logo-ghsc,
+.logo-usa{background:transparent}
+.kicker{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--bleu);
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.kicker .sep{width:4px;height:4px;border-radius:50%;background:var(--line-strong)}
+h1{
+  font-size:clamp(28px,4.1vw,42px);line-height:1.08;margin:0;
+  font-weight:700;letter-spacing:-.01em;text-wrap:balance;color:var(--rouge);
+}
+.standfirst{
+  font-size:18px;color:var(--ink-2);max-width:76ch;margin:0;
+}
+.mast-meta{
+  display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:4px;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+}
+.mast-meta b{color:var(--ink-2);font-weight:500}
+
+/* ---------- nav ---------- */
+nav.toc{position:sticky;top:24px;padding:36px 0 40px}
+nav.toc .toc-title{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 14px;
+}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+nav.toc a{
+  display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:baseline;
+  text-decoration:none;color:var(--ink-2);
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:13.5px;line-height:1.35;
+  padding:6px 8px;border-radius:4px;border-left:2px solid transparent;
+}
+nav.toc a:hover{background:var(--surface);color:var(--accent);border-left-color:var(--accent)}
+nav.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+main{padding:44px 0 120px;min-width:0}
+
+/* ---------- sections ---------- */
+section{margin:0 0 68px;scroll-margin-top:20px}
+section > h2{
+  font-size:clamp(20px,2.5vw,26px);font-weight:700;letter-spacing:-.008em;
+  margin:0 0 6px;text-wrap:balance;color:var(--rouge-h1);
+}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;
+  color:var(--bleu-clair);letter-spacing:.08em;display:block;margin-bottom:10px;
+}
+.lede{color:var(--ink-2);margin:0 0 26px}
+h3{font-size:17.5px;font-weight:700;margin:34px 0 10px;letter-spacing:0;color:var(--bleu)}
+h4{font-size:14.5px;font-weight:700;margin:24px 0 8px;color:var(--muted);
+   font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;letter-spacing:.01em}
+p{margin:0 0 14px}
+ul,ol.body{padding-left:20px;margin:0 0 16px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+hr.rule{border:0;border-top:1px solid var(--line);margin:44px 0}
+
+/* ---------- inline code ---------- */
+code{
+  font-size:.855em;background:var(--surface-2);border:1px solid var(--line);
+  padding:.08em .34em;border-radius:3px;color:var(--ink);white-space:nowrap;
+}
+.cell{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+
+/* ---------- code blocks ---------- */
+.code{
+  background:var(--code-bg);border-radius:6px;margin:0 0 20px;overflow:hidden;
+  border:1px solid var(--line);
+}
+.code .cap{
+  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;
+  padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#93A5BC;
+}
+.code .cap b{color:var(--code-key);font-weight:500}
+.code pre{
+  margin:0;padding:14px;overflow-x:auto;
+  font-size:12.6px;line-height:1.62;color:var(--code-ink);
+}
+.code pre code{background:none;border:0;padding:0;white-space:pre;color:inherit;font-size:inherit}
+.k{color:var(--code-key)} .s{color:var(--code-str)} .c{color:var(--code-com);font-style:italic}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.6px;
+      font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;min-width:520px}
+th{
+  text-align:left;font-weight:600;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);padding:11px 14px;border-bottom:1px solid var(--line-strong);
+  background:var(--surface-2);white-space:nowrap;
+}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+td.mono,th.mono{font-family:"IBM Plex Mono",monospace;font-size:12.2px;color:var(--ink)}
+td b{color:var(--ink);font-weight:600}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+
+/* ---------- callouts ---------- */
+.note{
+  border-left:3px solid var(--accent);background:var(--surface);
+  padding:14px 18px;margin:0 0 22px;border-radius:0 5px 5px 0;max-width:84ch;
+}
+.note.warn{border-left-color:var(--forte)}
+.note.stop{border-left-color:var(--danger)}
+.note p:last-child{margin-bottom:0}
+.note .lbl{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:5px;
+}
+.note.warn .lbl{color:var(--forte)}
+.note.stop .lbl{color:var(--danger)}
+
+/* ---------- season pills ---------- */
+.pill{
+  display:inline-block;font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.04em;padding:2px 8px;border-radius:99px;white-space:nowrap;
+}
+.pill.f{background:var(--faible-soft);color:var(--faible)}
+.pill.h{background:var(--forte-soft);color:var(--forte)}
+.pill.a{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- diagram ---------- */
+figure{margin:0 0 26px}
+.diagram{
+  overflow-x:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:6px;padding:22px 20px;
+}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+/* ---------- steps / fiche ---------- */
+.fiche{
+  background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:18px 20px;margin:0 0 16px;box-shadow:var(--shadow);
+}
+.fiche h4{margin:0 0 4px;font-size:14.5px;color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
+.fiche .trig{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;color:var(--muted);margin:0 0 12px}
+.fiche dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13.8px}
+.fiche dt{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.1em;
+          text-transform:uppercase;color:var(--muted);padding-top:4px}
+.fiche dd{margin:0;color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:0 0 22px}
+
+/* ---------- risk list ---------- */
+.risks{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);
+       border-radius:6px;overflow:hidden;background:var(--surface);margin:0 0 22px}
+.risk{display:grid;grid-template-columns:82px 1fr;gap:18px;padding:16px 20px;
+      border-bottom:1px solid var(--line)}
+.risk:last-child{border-bottom:0}
+.risk .sev{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;padding:3px 0;color:var(--danger);
+  border-top:2px solid var(--danger);height:fit-content;
+}
+.risk.med .sev{color:var(--forte);border-top-color:var(--forte)}
+.risk.low .sev{color:var(--muted);border-top-color:var(--line-strong)}
+.risk h4{margin:0 0 6px;font-size:14.5px;color:var(--ink)}
+.risk p{margin:0 0 8px;font-size:14.2px;max-width:80ch}
+.risk p:last-child{margin-bottom:0}
+.risk .fix{font-size:13.4px;color:var(--muted)}
+.risk .fix b{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;letter-spacing:.1em;
+             text-transform:uppercase;color:var(--accent);margin-right:6px}
+
+footer{border-top:3px solid var(--rouge);padding:26px 0 64px;color:var(--muted);font-size:12.6px;line-height:1.5}
+footer p{max-width:78ch;margin:0 0 12px}
+.foot-top{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.foot-id{max-width:52ch}
+.foot-id .prog{
+  font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;
+  font-size:13px;font-weight:700;color:var(--bleu);margin:0 0 4px;letter-spacing:.01em;
+}
+.foot-id .dev{margin:0;color:var(--ink-2)}
+.foot-id .dev b{color:var(--ink)}
+.logo-usa{width:220px;height:auto;flex:0 0 auto}
+:root[data-theme="dark"] .logo-usa,
+:root:not([data-theme="light"]) .logo-usa{filter:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .logo-usa,
+  :root:not([data-theme="light"]) .logo-ghsc{background:#FFFFFF;padding:6px 10px;border-radius:3px}
+}
+:root[data-theme="dark"] .logo-usa,
+:root[data-theme="dark"] .logo-ghsc{background:#FFFFFF;padding:6px 10px;border-radius:3px}
+.foot-legal{border-top:1px solid var(--line);padding-top:16px;font-size:11.8px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;padding:26px 0 6px;border-bottom:1px solid var(--line)}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0}
+  main{padding-top:30px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- impression / PDF ---------- */
+@media print{
+  :root{ --ground:#FFFFFF; --surface:#FFFFFF; --shadow:none; }
+  @page{margin:14mm 12mm}
+  body{font-size:10.5pt;background:#fff}
+  .wrap{max-width:none;padding:0}
+  .layout{display:block}
+  nav.toc{display:none}
+  main{padding:18px 0 0}
+  section > h2, h3, h4{break-after:avoid-page}
+  .fiche,.note,.code,.tw,figure{break-inside:avoid-page}
+  .tw{overflow:visible}
+  table{min-width:0;font-size:9pt}
+  .code pre{font-size:8.6pt;white-space:pre-wrap;word-break:break-word}
+  a{color:inherit;text-decoration:none}
+}
+
+h4.sub{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:16.5px;font-weight:700;color:var(--ink);margin:22px 0 8px}
+
+</style>
+
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="mast-inner">
+      <img class="logo-ghsc" src="data:image/png;base64,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" alt="U.S. Government Global Health Supply Chain Program — Procurement and Supply Management">
+      <div class="kicker">
+        <span>Niger</span><span class="sep"></span>
+        <span>PCDD — PLAN DE CONTRÔLE DE DISTRIBUTION DES DISTRICTS</span><span class="sep"></span>
+        <span>Octobre 2026</span>
+      </div>
+      <h1>Guide développeur PCDD</h1>
+      <p class="standfirst">Documentation technique de l’application Excel de contrôle des intrants antipaludiques</p>
+      <div class="mast-meta">
+        <span><b>Parties</b> · 6</span>
+        <span><b>Classeurs</b> · 3</span>
+        <span><b>Procédures VBA</b> · 36</span>
+        <span><b>Contrôles recensés</b> · 12</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<nav class="toc">
+  <p class="toc-title">Sommaire</p>
+  <ol>
+    <li><a href="#s01"><span class="n">01</span><span>Architecture</span></a><ul class="sub"><li><a href="#h-glossaire">Glossaire</a></li><li><a href="#h-les-trois-etapes-vues-par-l-officier">Les trois étapes vues par l’officier</a></li><li><a href="#h-les-chemins-d-installation">Les chemins d’installation</a></li><li><a href="#h-ce-qu-il-faut-re-encoder-pour-une-nouvelle-c">Ce qu’il faut ré-encoder pour une nouvelle copie</a></li></ul></li>
+    <li><a href="#s02"><span class="n">02</span><span>Module de visualisation</span></a><ul class="sub"><li><a href="#h-feuilles-et-roles">Feuilles et rôles</a></li><li><a href="#h-la-feuille-de-reconstruction">La feuille de reconstruction</a></li><li><a href="#h-les-formules-de-controle-et-d-horodatage">Les formules de contrôle et d’horodatage</a></li><li><a href="#h-les-controles-et-la-sauvegarde">Les contrôles et la sauvegarde</a></li><li><a href="#h-l-enchainement-capture-et-transfert">L’enchaînement capture et transfert</a></li></ul></li>
+    <li><a href="#s03"><span class="n">03</span><span>Base Historique et CMMA</span></a><ul class="sub"><li><a href="#h-colonne-consommation-ajuste-la-correction-de">Colonne Consommation ajusté — la correction des ruptures</a></li><li><a href="#h-colonne-semestre-la-saisonnalite">Colonne Semestre — la saisonnalité</a></li><li><a href="#h-niveau-1-la-fenetre-de-trois-mois-corrigee-d">Niveau 1 — la fenêtre de trois mois, corrigée de la saison</a></li><li><a href="#h-niveau-2-la-moyenne-par-produit">Niveau 2 — la moyenne par produit</a></li><li><a href="#h-niveau-3-le-repli-saisonnier">Niveau 3 — le repli saisonnier</a></li><li><a href="#h-l-arbitrage-final">L’arbitrage final</a></li></ul></li>
+    <li><a href="#s04"><span class="n">04</span><span>Application PCDD</span></a><ul class="sub"><li><a href="#h-les-feuilles-par-role">Les feuilles, par rôle</a></li><li><a href="#h-la-source-unique-power-query">La source unique : Power Query</a></li><li><a href="#h-la-session-mensuelle-etape-par-etape">La session mensuelle, étape par étape</a></li><li><a href="#h-etape-1-la-saisie-des-bons-de-commande">Étape 1 — la saisie des bons de commande</a></li><li><a href="#h-etape-2-a-le-parametrage-et-l-arbitrage-dist">Étape 2-A — le paramétrage et l’arbitrage district</a></li><li><a href="#h-etape-2-b-le-rapport-et-le-circuit-de-valida">Étape 2-B — le rapport et le circuit de validation du MCD</a></li><li><a href="#h-etape-3-finaliser-et-archiver">Étape 3 — finaliser et archiver</a></li></ul></li>
+    <li><a href="#s05"><span class="n">05</span><span>Développement et maintenance</span></a><ul class="sub"><li><a href="#h-pcdd-lt-district-gt-xlsm">PCDD_&lt;district&gt;.xlsm</a></li><li><a href="#h-module-visualisation-lt-district-gt-xlsm">Module_Visualisation_&lt;district&gt;.xlsm</a></li><li><a href="#h-ajouter-un-produit">Ajouter un produit</a></li><li><a href="#h-ajouter-ou-desactiver-un-csi">Ajouter ou désactiver un CSI</a></li><li><a href="#h-produire-la-copie-d-un-nouveau-district">Produire la copie d’un nouveau district</a></li><li><a href="#h-ouvrir-le-code">Ouvrir le code</a></li><li><a href="#h-la-documentation-elle-meme">La documentation elle-même</a></li></ul></li>
+    <li><a href="#s06"><span class="n">06</span><span>Contrôles, dépannage et tests</span></a><ul class="sub"><li><a href="#h-tests-de-non-regression-apres-modification">Tests de non-régression après modification</a></li></ul></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="s01">
+  <span class="sec-num">01</span>
+  <h2>Architecture générale et prérequis</h2>
+<p class="lede">Le PCDD contrôle les quantités d’intrants antipaludiques que les formations sanitaires commandent à leur district. Il substitue à un arbitrage discrétionnaire un arbitrage adossé à une consommation moyenne mensuelle calculée, tout en restant dans Excel — parce que l’e-SIGL reprendra ces fonctions et que le Ministère refuse un système parallèle.</p>
+<div class="note"><span class="lbl">Portée de ce document</span><p>Le PCDD est déployé dans chaque district où un officier exploite le module. Il existe donc autant de jeux de fichiers que de districts : identiques dans leur logique et dans leur code, distincts par leur configuration — nom du district dans les noms de fichiers, référentiel des sites, chemins d’installation.</p><p>Ce guide décrit le <strong>classeur de référence</strong>, celui à partir duquel chaque copie de district est produite. Les feuilles, les formules, les plages et les procédures qui y sont documentées sont celles de toute installation.</p><p>Lorsqu’un exemple concret est utile — un chemin, un nom de fichier, un volume de données —, c’est la copie configurée pour le <strong>district d’Illéla</strong> qui sert d’illustration. Elle est signalée comme telle à chaque fois.</p><p>Ce qui est décrit vaut pour tout district. Ne varient d’une installation à l’autre que le nom du district dans les noms de fichiers, le contenu du référentiel des sites et les chemins recensés au § 02. La structure des classeurs, les formules et les procédures sont communes à toutes les installations.</p></div>
+<p>L’application ne se réduit pas à un classeur Excel doté de quelques macros : il s’agit d’un pipeline à trois étages, réparti sur trois classeurs qui communiquent par fichier interposé. Les noms ci-dessous portent le suffixe du district ; ceux de la copie d’Illéla sont donnés en exemple.</p>
+<div class="fiche"><h4>Module_Visualisation_&lt;district&gt;.xlsm</h4><p class="trig">Poste de saisie · import DHIS2 et contrôle</p><dl><dt>Entrée</dt><dd>Export DHIS2 collé dans la feuille <code>Donnée_Importer</code></dd><dt>Sortie</dt><dd>Lignes normalisées écrites dans la Base Historique</dd><dt>Cœur</dt><dd><code>Data_Produit_Saisie</code> : reconstruction par formules, contrôles de cohérence, taux de complétude</dd></dl></div>
+<div class="fiche"><h4>Base_HISTORIQUE_&lt;district&gt;.xlsx</h4><p class="trig">Entrepôt · une seule table exploitée, deux colonnes calculées</p><dl><dt>Contenu</dt><dd><code>Tble_Data_Produit_Historique_Compl15</code>, 46 colonnes — 5 146 lignes dans la copie d’Illéla</dd><dt>Cœur</dt><dd>Colonnes <strong>Semestre</strong> et <strong>Consommation ajusté</strong> — c’est là que la saisonnalité et la correction des ruptures sont encodées</dd></dl></div>
+<div class="fiche"><h4>PCDD_&lt;district&gt;.xlsm</h4><p class="trig">Poste district · CMMA, bons de commande, arbitrage</p><dl><dt>Entrée</dt><dd>Requête Power Query sur la Base Historique, alimentant cinq tableaux croisés dynamiques</dd><dt>Sortie</dt><dd>Rapport de distribution PDF soumis au MCD, historique des rapports, tables d’archive</dd><dt>Cœur</dt><dd><code>CMM&amp;Saisie_BC</code> et <code>Pilotage_PCDD</code></dd></dl></div>
+<div class="note"><span class="lbl">À retenir</span><p>La logique métier ne vit pas dans le VBA. Elle vit dans <strong>deux colonnes calculées de la Base Historique</strong> et dans <strong>une dizaine de formules matricielles</strong> des feuilles <code>CMMA</code> et <code>CMM&amp;Saisie_BC</code>. Le VBA se limite à déplacer des valeurs, vérifier des verrous et exporter. Une reprise fondée sur la seule lecture des macros laisserait de côté l’essentiel de la logique.</p></div>
+<h3 id="h-glossaire">Glossaire</h3>
+<p>Les sigles ci-dessous sont employés dans le guide d’utilisation destiné aux officiers. Ils sont repris ici à l’identique.</p>
+<div class="tw"><table><thead><tr><th>Sigle</th><th>Développé</th><th>Emploi</th></tr></thead><tbody><tr><td>BC</td><td>Bon de commande</td><td>Quantité demandée par la formation sanitaire, saisie en colonne <code>K</code> de <code>CMM&amp;Saisie_BC</code></td></tr><tr><td>CMM</td><td>Consommation moyenne mensuelle</td><td>Le concept générique, réservé aux énoncés de principe</td></tr><tr><td>CMMA</td><td>Consommation moyenne mensuelle <strong>ajustée</strong></td><td>La valeur effectivement calculée, corrigée des jours de rupture. C’est elle qui circule dans toutes les feuilles</td></tr><tr><td>CSI</td><td>Centre de santé intégré</td><td>Formation sanitaire destinataire de la distribution</td></tr><tr><td>DHIS2</td><td>District Health Information System 2</td><td>Source des données logistiques en amont</td></tr><tr><td>HD</td><td>Hôpital de district</td><td>Second type de destinataire, paramétré séparément des CSI</td></tr><tr><td>MCD</td><td>Médecin chef de district</td><td>Valide le rapport de distribution ; peut demander des amendements</td></tr><tr><td>MdS</td><td>Mois de stock</td><td>Unité de couverture : stock divisé par la CMMA</td></tr><tr><td>ONPPC</td><td>Office national des produits pharmaceutiques et chimiques</td><td>Approvisionne les districts avant chaque trimestre ; ses retards motivent le stock de sécurité</td></tr><tr><td>PCDD</td><td>Plan de contrôle de distribution des districts</td><td>Le dispositif, et par extension le classeur <code>PCDD_&lt;district&gt;.xlsm</code></td></tr><tr><td>PNLP</td><td>Programme national de lutte contre le paludisme</td><td>Source des allocations saisies en <code>M10</code></td></tr><tr><td>SIGL</td><td>Système d’information en gestion logistique</td><td>Les repères nationaux de couverture, de 1 à 2 MdS</td></tr><tr><td>TCD</td><td>Tableau croisé dynamique</td><td>Les vues sur la Base Historique</td></tr><tr><td>TDR</td><td>Test de diagnostic rapide</td><td>Produit au traitement particulier : deux libellés DHIS2 agrégés</td></tr></tbody></table></div>
+<p class="lede">Sept étapes, deux passages par le disque, un seul point de vérité — la table de la Base Historique.</p>
+<div class="tw"><table><thead><tr><th>Étape</th><th>Où</th><th>Ce qui se passe</th></tr></thead><tbody><tr><td>1 · Import</td><td>Module de Visualisation</td><td>L’export DHIS2 est collé dans <code>Donnée_Importer</code> ; la macro <code>coller</code> réinstalle les colonnes calculées.</td></tr><tr><td>2 · Reconstruction</td><td>Module de Visualisation</td><td><code>Data_Produit_Saisie</code> restructure les données à plat en une ligne par site × produit × mois.</td></tr><tr><td>3 · Contrôles</td><td>Module de Visualisation</td><td>Cohérence logistique, taux de complétude, détection de doublons.</td></tr><tr><td>4 · Sauvegarde</td><td>Module de Visualisation → disque</td><td><code>Copier_Historique_Completude</code> ouvre la Base Historique, y colle les valeurs et la referme.</td></tr><tr><td>5 · Actualisation</td><td>Disque → PCDD</td><td>Power Query relit la table historique ; cinq TCD en dérivent les vues.</td></tr><tr><td>6 · CMMA et saisie</td><td>PCDD district</td><td><code>CMM&amp;Saisie_BC</code> calcule la CMMA retenue et reçoit le bon de commande du CSI.</td></tr><tr><td>7 · Arbitrage et restitution</td><td>PCDD district</td><td><code>Pilotage_PCDD</code> arrête les quantités validées ; <code>Rapport_CMD_PDF</code> produit le rapport soumis au MCD.</td></tr></tbody></table></div>
+<p>Les étapes 4 et 5 sont les deux passages par le disque : le VBA du poste de saisie ouvre physiquement la Base Historique, y colle des valeurs et la referme ; le poste district la relit via Power Query. Il n’y a aucune base de données — le fichier <em>est</em> la base.</p>
+<h3 id="h-les-trois-etapes-vues-par-l-officier">Les trois étapes vues par l’officier</h3>
+<p>Le guide d’utilisation structure la session mensuelle en trois étapes. La correspondance avec les sections de ce document est la suivante.</p>
+<div class="tw"><table><thead><tr><th>Étape (guide d’utilisation)</th><th>Section de ce guide</th><th>Objets concernés</th></tr></thead><tbody><tr><td>Étape 1 — Saisir les quantités des bons de commande</td><td>§ 07</td><td><code>CMM&amp;Saisie_BC</code>, <code>Valider_BC</code></td></tr><tr><td>Étape 2 — Piloter le PCDD et obtenir la validation du rapport</td><td>§ 08 — paramétrage et arbitrage ; § 09 — rapport et validation MCD</td><td><code>Pilotage_PCDD</code>, <code>Ajouter_Rapport_CMD</code>, <code>Exporter_Rapport_CMD_PDF</code>, <code>Filtrer_Produit_Rapport_CMD</code></td></tr><tr><td>Étape 3 — Finaliser et archiver</td><td>§ 10</td><td><code>Archiver_Tbl_Rapport_CMD</code>, <code>Rapport_HISTORIQUE PCDD_PDF</code></td></tr></tbody></table></div>
+<div class="note"><span class="lbl">L’étape 2 est une boucle</span><p>L’étape 2 comporte deux temps : l’arbitrage, puis la soumission du rapport au MCD pour approbation. Le MCD peut demander des amendements, qui imposent de revenir sur l’arbitrage et de régénérer le rapport. Le cycle se répète jusqu’au rapport final, qui seul fait foi — le classeur ne conserve aucune trace des tours intermédiaires.</p><p>C’est la procédure <code>Filtrer_Produit_Rapport_CMD</code>, derrière le bouton « Reprise de saisie » de l’écran de pilotage, qui rend ce retour possible. Elle n’est donc pas un chemin de rattrapage en cas d’erreur, mais une étape normale du circuit d’approbation. Voir le § 09.</p></div>
+<h3 id="h-les-chemins-d-installation">Les chemins d’installation</h3>
+<div class="note stop"><span class="lbl">Version d’Excel requise</span><p>Le PCDD et le Module de Visualisation reposent sur des fonctions matricielles dynamiques qui n’existent qu’à partir de Microsoft 365 : <code>FILTRE</code>, <code>UNIQUE</code>, <code>TRIER</code>, <code>RECHERCHEX</code>, <code>LET</code> et <code>CHOISIRCOLS</code>. À elles seules, <code>FILTRE</code> et <code>RECHERCHEX</code> apparaissent plus de trois cents fois dans le classeur.</p><p>Sur une version antérieure — Office 2019 ou 2016 —, le calcul n’est pas faux : il n’a pas lieu. Les cellules concernées affichent <code>#NOM?</code>, la CMMA ne se calcule plus et les boutons ne s’affichent pas. Microsoft 365 est donc un prérequis d’installation au même titre que les chemins d’accès.</p></div>
+<p>L’application est configurée district par district. Chaque officier travaille sur sa propre copie des trois fichiers, déposée dans son dossier OneDrive synchronisé, et les chemins sont écrits en dur dans le code en fonction de cet emplacement. <strong>Ce sont donc des paramètres d’installation, non des constantes du produit</strong> : ils varient d’une copie à l’autre et doivent être renseignés à la configuration. Une nouvelle version se diffuse en écrasant le fichier dans le dossier de l’officier, ce qui suppose que le fichier déposé porte déjà les chemins de cette installation.</p>
+<div class="code"><div class="cap"><b>Moule — tout chemin du projet se décompose ainsi</b></div><pre><code>C:\Users\&lt;officier&gt;\OneDrive - Chemonics\&lt;dossier de travail&gt;\&lt;fichier&gt;
+
+' &lt;officier&gt;            varie  — compte de session Windows
+' &lt;dossier de travail&gt;  varie  — arborescence propre à l’officier
+' &lt;fichier&gt;             varie  — suffixé du nom du district</code></pre></div>
+<p>Le classeur de référence est livré non configuré : les littéraux qu’il contient sont ceux du poste de développement. La configuration consiste à les remplacer par ceux du poste de l’officier. L’exemple ci-dessous est la copie du district d’Illéla, dont le propriétaire est le compte <code>bgarba</code> et le dossier de travail <code>Bureau\PCDD\Module_Visualisation\</code> ; les trois fichiers et les dossiers de sortie y cohabitent.</p>
+<div class="tw"><table><thead><tr><th>Cible</th><th>Utilisée par</th><th>Exemple — la copie d’Illéla</th></tr></thead><tbody><tr><td><strong>Base Historique</strong></td><td>PCDD · requête Power Query (source des TCD)<br>Module de Visualisation · sauvegarde et suppression</td><td>C:\Users\<strong>bgarba</strong>\OneDrive - Chemonics\Bureau\PCDD\Module_Visualisation\Base_HISTORIQUE_<strong>Illela</strong>.xlsx</td></tr><tr><td><strong>Sortie · rapport de distribution</strong></td><td>PCDD · <code>Exporter_Rapport_CMD_PDF</code></td><td>…\Bureau\PCDD\Module_Visualisation\Rapport_MCD_PDF\</td></tr><tr><td><strong>Sortie · photos de complétude</strong></td><td>Module de Visualisation · <code>rapport_CSI_JPG</code></td><td>…\Bureau\PCDD\Module_Visualisation\Photos\</td></tr><tr><td><strong>Sortie · rapport CSE</strong></td><td>Module de Visualisation · <code>rapport_CSE_PDF</code></td><td>…\Bureau\PCDD\Module_Visualisation\Rapport_CSE\</td></tr></tbody></table></div>
+<p>Dans une copie correctement configurée, la requête Power Query, la procédure d’export PDF et les procédures VBA du Module de Visualisation désignent toutes la même racine. Les procédures référencent en outre les classeurs par leur nom, suffixé du district — pour Illéla, <code>Workbooks("Module_Visualisation_Illela.xlsm")</code> et <code>Workbooks("Base_HISTORIQUE_Illela.xlsx")</code>.</p>
+<div class="note stop"><span class="lbl">L’invariant à vérifier sur chaque installation</span><p>Le fichier que <strong>le Module de Visualisation écrit</strong>, le fichier que <strong>Power Query lit</strong> et le fichier <strong>qui existe sur le disque</strong> doivent être un seul et même fichier — même dossier, même nom, à la lettre près.</p><p>C’est la seule vérification qui compte, parce que son échec est silencieux : le poste de saisie sauvegarde dans un fichier, le district en lit un autre, les CMMA se calculent sur un historique figé et les quantités validées s’éloignent du réel mois après mois sans qu’aucun message ne s’affiche.</p></div>
+<h3 id="h-ce-qu-il-faut-re-encoder-pour-une-nouvelle-c">Ce qu’il faut ré-encoder pour une nouvelle copie</h3>
+<p>Deux littéraux dans le PCDD, sept dans le Module de Visualisation. Aucun n’est facultatif : en oublier un produit exactement la panne silencieuse décrite plus haut.</p>
+<div class="tw"><table><thead><tr><th>#</th><th>Classeur</th><th>Procédure · variable</th><th>Comment y accéder</th><th>Quoi mettre</th></tr></thead><tbody><tr><td>1</td><td>PCDD</td><td>Requête <code>Tble_Data_Produit_Historique_Compl15</code>, étape <em>Source</em></td><td>Données → Requêtes et connexions → clic droit → Modifier</td><td>&lt;dossier&gt;\Base_HISTORIQUE_&lt;district&gt;.xlsx</td></tr><tr><td>2</td><td>PCDD</td><td><code>Exporter_Rapport_CMD_PDF</code> · <code>chemin</code></td><td>Alt+F11</td><td>&lt;dossier&gt;\Rapport_MCD_PDF\</td></tr><tr><td>3</td><td>Module de Visualisation</td><td><code>Copier_Historique_Completude</code> · <code>CheminHistorique</code></td><td>Alt+F11</td><td>&lt;dossier&gt;\Base_HISTORIQUE_&lt;district&gt;.xlsx</td></tr><tr><td>4</td><td>Module de Visualisation</td><td><code>CopierVersHistorique</code> · <code>CheminHistorique</code>, plus deux appels <code>Workbooks(...)</code></td><td>idem</td><td>le chemin, et les deux noms de classeur suffixés du district</td></tr><tr><td>5</td><td>Module de Visualisation</td><td><code>SupprimerLignesHistorique</code> · <code>CheminHistorique</code>, plus deux appels <code>Workbooks(...)</code></td><td>idem</td><td>idem</td></tr><tr><td>6</td><td>Module de Visualisation</td><td><code>Ouvrir_Fermer_Base_HISTORIQUE_DSX</code>, <code>Calculer_NB_SI_ENS_Depuis_FichierFerme</code> et <code>Worksheet_Calculate</code> · <code>cheminFichier</code></td><td>idem</td><td>&lt;dossier&gt;\Base_HISTORIQUE_&lt;district&gt;.xlsx</td></tr><tr><td>7</td><td>Module de Visualisation</td><td><code>rapport_CSI_JPG</code> · <code>basePath</code></td><td>idem</td><td>&lt;dossier&gt;\Photos\</td></tr><tr><td>8</td><td>Module de Visualisation</td><td><code>rapport_CSE_PDF</code> · <code>cheminDossier</code></td><td>idem</td><td>&lt;dossier&gt;\Rapport_CSE\</td></tr></tbody></table></div>
+<div class="note warn"><span class="lbl">Le nom du dossier se recopie à la lettre</span><p>Dans le classeur de référence, les neuf littéraux désignent le dossier <code>Module_Visualiasation</code> — orthographié ainsi dans le code. Les chemins étant comparés caractère par caractère, le dossier créé sur le poste doit porter exactement la même graphie que celle inscrite dans le code, quelle qu’elle soit. Le plus sûr est de corriger les deux ensemble lors de la configuration.</p></div>
+<div class="note warn"><span class="lbl">Les dossiers de sortie doivent exister</span><p>Les macros d’export commencent par un test <code>If Dir(cheminDossier, vbDirectory) = "" Then … Exit Sub</code>. Créer les sous-dossiers <code>Rapport_MCD_PDF</code>, <code>Photos</code> et <code>Rapport_CSE</code> fait partie de l’installation, sans quoi l’utilisateur reçoit « dossier introuvable » sans comprendre pourquoi.</p></div>
+</section>
+
+<section id="s02">
+  <span class="sec-num">02</span>
+  <h2>Le Module de Visualisation</h2>
+<p class="lede">Quatorze feuilles, dont une seule porte le traitement. L’export DHIS2 arrive à plat, une nappe de formules le restructure en une ligne par site × produit × mois, et le VBA transfère le résultat vers la Base Historique.</p>
+<h3 id="h-feuilles-et-roles">Feuilles et rôles</h3>
+<div class="tw"><table><thead><tr><th>Feuille</th><th>Rôle</th></tr></thead><tbody><tr><td><code>Donnée_Importer</code></td><td>Zone de collage de l’export DHIS2 — 12 colonnes. Des colonnes calculées y sont réinjectées par la macro <code>coller</code> : la clé site + produit, le <code>Statut</code> (croisement district actif × site actif) et le <code>Type Centre</code> (CSI ou HD selon le préfixe du nom).</td></tr><tr><td><code>Liste_Site</code></td><td>Référentiel Région / District / Site — 518 lignes. <code>Liste_Site1</code> en porte la version enrichie du statut.</td></tr><tr><td><code>dataname</code></td><td>Table <code>T_Produits</code> : correspondance entre le libellé DHIS2 et le produit retenu. Point d’entrée pour ajouter un produit.</td></tr><tr><td><code>Liste_Deroulante</code></td><td>Feuille de calcul intermédiaire : TCD, séquences et clés concaténées. Porte le verrou global de la saisie.</td></tr><tr><td><code>Data_Produit_Saisie</code></td><td>La feuille de travail. Voir ci-dessous.</td></tr><tr><td><code>Rapport_CSI</code>, <code>Rapport_CSE</code></td><td>Mises en page exportées en image et en PDF par les macros du même nom.</td></tr><tr><td><code>Taux_Saisie_District</code></td><td>Suivi du taux de saisie, alimenté par <code>Cal_Taux_Saisie_District</code>.</td></tr><tr><td><code>Supprimer_CSI_historique</code></td><td>Écran de suppression ciblée dans la Base Historique.</td></tr><tr><td><code>Paramettre</code>, <code>Accueil</code>, <code>Gestion_Administrative</code>, <code>image</code></td><td>Navigation, paramètres et ressources graphiques.</td></tr></tbody></table></div>
+<h3 id="h-la-feuille-de-reconstruction">La feuille de reconstruction</h3>
+<p>Le mécanisme est un produit cartésien construit à la formule : <code>SEQUENCE</code> et <code>QUOTIENT</code> répètent chaque site autant de fois qu’il y a de produits, <code>LET</code> et <code>MOD</code> font tourner la liste des produits en regard. Les variables logistiques mensuelles sont ensuite récupérées par <code>RECHERCHEV</code> sur une clé concaténée site + produit + libellé DHIS2, dans des colonnes de travail, puis recopiées dans les colonnes exploitées.</p>
+<div class="tw"><table><thead><tr><th>Variable</th><th>Contenu</th><th>Origine</th></tr></thead><tbody><tr><td>Stock début</td><td>Stock disponible au début du mois</td><td>RECHERCHEV sur l’export DHIS2</td></tr><tr><td>Jours de rupture</td><td>Nombre de jours sans stock dans le mois</td><td>idem</td></tr><tr><td>Quantités reçues</td><td>Entrées du mois</td><td>idem</td></tr><tr><td>Quantités consommées</td><td>Sorties du mois</td><td>idem</td></tr><tr><td>Stock fin</td><td>Stock disponible en fin de mois</td><td>RECHERCHEV directe</td></tr><tr><td>Date fin de mois</td><td>Dernier jour du mois considéré</td><td>FIN.MOIS(année ; mois)</td></tr><tr><td>Analyse Base</td><td>Signale les lignes dont les quatre indicateurs se contredisent</td><td>Colonne <code>N</code> — <code>NB</code>, <code>SI</code>, <code>OU</code>, <code>ET</code>, <code>JOUR</code> et <code>SIERREUR</code> sur l’export DHIS2</td></tr><tr><td>Complétude</td><td>Complétude par CSI et par produit</td><td>Colonnes <code>AN</code> et <code>AO</code> — <code>NB</code> et <code>SI</code> sur l’export DHIS2</td></tr><tr><td>Complétude interprétée</td><td>Même calcul, mais un seul indicateur renseigné pour un produit suffit à considérer les autres comme renseignés</td><td>Colonnes <code>AP</code> et <code>AQ</code> — <code>ET</code>, <code>SI</code>, <code>MOYENNE</code> et <code>INDIRECT</code></td></tr><tr><td>ID_Saisie</td><td>Clé unique par ligne de produit et par CSI</td><td>Colonne <code>Y</code> — concaténation</td></tr><tr><td>Date Opération</td><td>Date et heure de l’enregistrement</td><td>Colonne <code>Z</code> — <code>SI</code> et <code>MAINTENANT</code></td></tr><tr><td>Test Doublons</td><td>Teste si l’enregistrement existe déjà dans la Base Historique</td><td>Colonne <code>AA</code> — <code>SI</code>, <code>ESTNA</code> et <code>RECHERCHEV</code></td></tr><tr><td>Complétude Du</td><td>Rattache à chaque ligne la date de complétude saisie en <code>P12</code></td><td>Colonne <code>AD</code> — <code>SI</code></td></tr></tbody></table></div>
+<h3 id="h-les-formules-de-controle-et-d-horodatage">Les formules de contrôle et d’horodatage</h3>
+<p>Sept colonnes de <code>Data_Produit_Saisie</code> ne portent pas de donnée logistique : elles contrôlent, identifient et horodatent. Les formules sont transcrites en notation française ; la ligne 2 sert de référence, la formule étant recopiée sur toute la colonne.</p>
+<div class="code"><div class="cap"><b>Data_Produit_Saisie — contrôle, clé, horodatage</b></div><pre><code>N    =SI(NB(H2:K2)=4;
+        SIERREUR(SI(OU(ET(H2=0; J2=0; R2=0; K2&gt;0);
+                       ET(H2=0; J2=0; K2=0; I2=0);
+                       ET(OU(H2&gt;0; J2&gt;0); K2=0; I2&gt;0);
+                       K2&gt;(H2+J2+Q2);
+                       ET(OU(H2&gt;0; J2&gt;0); I2=JOUR(M2)));
+                 "données incohérentes"; ""); "");
+        "")
+
+Y    =SI($A$3=55; B2&amp;C2&amp;D2&amp;$P$12; "")
+Z    =SI($A$3=55; MAINTENANT(); "")
+AA   =SI($A$3=55;
+        SI(ESTNA(RECHERCHEV(B2&amp;C2&amp;D2&amp;$P$12;
+                 Data_Produit_Historique!$X:$X; 1; FAUX)); "Ok"; "Doublons");
+        "")
+AD   =SI($P$12=""; ""; $P$12)</code></pre></div>
+<p>La colonne <code>N</code> ne se prononce que si les quatre indicateurs sont renseignés — <code>NB(H2:K2)=4</code>. Elle signale alors une incohérence dans cinq cas : consommation déclarée sans stock ni réception ; ligne entièrement à zéro ; stock en début de mois mais aucune consommation alors que des jours de rupture sont déclarés ; consommation supérieure à tout ce qui a pu être disponible ; rupture couvrant le mois entier malgré un stock initial.</p>
+<div class="note"><span class="lbl">Le verrou de saisie</span><p>Les colonnes <code>Y</code>, <code>Z</code>, <code>AA</code> et <code>AD</code> ne se remplissent que si la cellule <code>A3</code> vaut 55. Tant que ce verrou n’est pas levé, aucune clé ni aucun horodatage n’est produit, ce qui interdit un transfert accidentel vers la Base Historique.</p><p>La colonne <code>AA</code> interroge ensuite la Base Historique par <code>RECHERCHEV</code> sur sa colonne <code>X</code>, qui porte la même clé concaténée. C’est ce test qui produit le signal « Doublons » et bloque la sauvegarde d’une période déjà enregistrée.</p></div>
+<p>Le TDR paludisme est le cas particulier : deux libellés DHIS2 distincts — antigène HRP2 et HRP2/pLDH — sont additionnés en un seul produit, ce qui explique une branche conditionnelle dupliquée dans chacune des quatre colonnes de travail.</p>
+<div class="note warn"><span class="lbl">Comportement de la branche TDR</span><p>Dans la colonne des jours de rupture, la branche TDR se termine par <code>MAX(RECHERCHEV(…);)</code> — le second argument du <code>MAX</code> est vide et le second <code>RECHERCHEV</code> n’est jamais lu, alors que les trois autres colonnes additionnent bien les deux libellés. Sur les TDR, les jours de rupture sont donc pris sur un seul des deux antigènes.</p></div>
+<h3 id="h-les-controles-et-la-sauvegarde">Les contrôles et la sauvegarde</h3>
+<p>La macro <code>Copier_Historique_Completude</code>, derrière le bouton « Sauvegarde », applique quatre gardes avant d’écrire quoi que ce soit.</p>
+<div class="fiche"><h4>Copier_Historique_Completude</h4><p class="trig">Bouton · poste de saisie</p><dl><dt>Garde 1</dt><dd>Un centre sanitaire doit être sélectionné</dd><dt>Garde 2</dt><dd>La <strong>date de complétude</strong> doit être renseignée en <code>P12</code></dd><dt>Garde 3</dt><dd>Aucun enregistrement ne doit déjà exister pour ce centre et cette période</dd><dt>Action</dt><dd>Ouvre la Base Historique, la déprotège avec le mot de passe <code>Chemonics</code>, colle 31 colonnes de valeurs à la première ligne libre de <code>Data_Produit_Historique_Complét</code></dd><dt>Bascule</dt><dd>Si le <strong>jour de la date saisie en <code>P12</code> est le 15</strong>, colle également dans <code>Data_Produit_Historique_Compl15</code> — la seule table que le PCDD district consomme</dd></dl></div>
+<div class="note"><span class="lbl">La règle du 15 du mois</span><p>Le guide d’utilisation l’énonce comme une règle de gestion : l’extraction DHIS2 est effectuée à partir du 15, et le PCDD n’utilise que la situation arrêtée au 15 de chaque mois. La bascule vers <code>Compl15</code> applique cette règle.</p><p>Précision technique utile au repreneur : le test porte sur le jour de la <strong>date de complétude saisie par l’officier</strong> en <code>P12</code>, et non sur la date du jour. C’est une amélioration par rapport aux versions antérieures, où la bascule dépendait du moment où l’officier cliquait. Le test reste une égalité stricte : une date de complétude au 14 ou au 16 alimente l’historique complet sans alimenter la table lue par le PCDD.</p></div>
+<h3 id="h-l-enchainement-capture-et-transfert">L’enchaînement capture et transfert</h3>
+<p>La capture d’image de la complétude et le transfert vers la Base Historique sont deux gestes distincts, longtemps exécutés par deux boutons séparés. La procédure <code>Tout_Executer</code> les enchaîne.</p>
+<div class="code"><div class="cap"><b>Tout_Executer — module standard</b></div><pre><code>Sub Tout_Executer()
+    ' Étape 1 : capture photo du rapport
+    If Not rapport_CSI_JPG() Then Exit Sub
+    ' Étape 2 : transfert des données vers l’historique
+    If Not Copier_Historique_Completude() Then Exit Sub
+    MsgBox "Traitement complet réussi : Capture et Transfert effectués avec succès !"
+End Sub</code></pre></div>
+<p>L’enchaînement a imposé une modification de signature : <code>rapport_CSI_JPG</code> et <code>Copier_Historique_Completude</code> sont désormais déclarées <code>Function … As Boolean</code> et non plus <code>Sub</code>. Chacune renvoie <code>False</code> lorsqu’une garde échoue ou que l’officier annule, ce qui interrompt la séquence. Les deux procédures restent appelables isolément.</p>
+<div class="note"><span class="lbl">Ce que l’enchaînement garantit</span><p>La capture précède le transfert. L’image conserve donc l’état des données <strong>avant</strong> l’écriture dans la Base Historique, ce qui en fait une pièce justificative des cases restées vides au moment de la clôture — c’est l’usage visé pour les relances auprès des chefs CSI.</p><p>Et comme le transfert ne s’exécute pas si la capture a échoué, les deux sorties ne peuvent pas diverger : il n’existe pas de mois transféré sans image correspondante.</p></div>
+</section>
+
+<section id="s03">
+  <span class="sec-num">03</span>
+  <h2>La Base Historique et le calcul de la CMMA</h2>
+<p class="lede">Trois feuilles, dont une seule table structurée exploitée par l’application. Les deux règles de gestion centrales du projet y sont encodées : la correction des ruptures de stock et la saisonnalité du paludisme.</p>
+<div class="tw"><table><thead><tr><th>Feuille</th><th>Colonnes</th><th>Statut</th></tr></thead><tbody><tr><td><code>Data_Produit_Historique</code></td><td>A:Z</td><td>Format historique v1 — cible de <code>CopierVersHistorique</code> et de <code>SupprimerLignesHistorique</code></td></tr><tr><td><code>Data_Produit_Historique_Complét</code></td><td>A:AC</td><td>Format enrichi — cible de toutes les sauvegardes</td></tr><tr><td><code>Data_Produit_Historique_Compl15</code></td><td>A:AT, 5 146 lignes</td><td><strong>Table <code>Tble_Data_Produit_Historique_Compl15</code> — l’unique source du PCDD district</strong></td></tr></tbody></table></div>
+<div class="note"><span class="lbl">Une base par district</span><p>La Base Historique ne porte que les données d’un seul district — 5 146 lignes dans la copie d’Illéla. Les versions antérieures travaillaient sur une base régionale de plus de cinquante mille lignes. Le passage au périmètre du district divise d’autant le temps de recalcul des trois colonnes ci-dessous, qui sont recalculées sur toute la table à chaque ouverture.</p></div>
+<h3 id="h-colonne-consommation-ajuste-la-correction-de">Colonne Consommation ajusté — la correction des ruptures</h3>
+<p>Une consommation observée sur un mois où le produit a été en rupture dix jours sous-estime le besoin réel. La colonne la redresse au prorata des jours servis.</p>
+<div class="code"><div class="cap"><b>Tble_Data_Produit_Historique_Compl15[Consommation ajusté] — colonne calculée</b></div><pre><code>=LET(
+   Q;  [@[Quantités Consommees]];
+   JR; [@[Nombre de jours de rupture]];
+   JM; JOUR([@[Date Fin Mois]]);
+
+   SI(OU(NON(ESTNUM(Q)); Q&lt;=0);
+      NA();                          ' pas de conso exploitable → exclue des moyennes
+      SI(OU(NON(ESTNUM(JR)); JR&lt;=0; JR&gt;=JM);
+         Q;                          ' pas de rupture (ou rupture aberrante) → brut
+         JM * Q / (JM - JR)          ' redressement au prorata
+      )))</code></pre></div>
+<p>Deux propriétés à connaître avant toute modification en aval :</p>
+<ul><li>Le retour <code>NA()</code> est délibéré : il fait qu’un mois sans consommation est <strong>ignoré</strong> par les moyennes de TCD, au lieu de tirer la CMMA vers zéro. Son remplacement par <code>0</code> fausserait l’ensemble du calcul sans qu’aucune erreur ne soit signalée.</li><li>Le garde-fou <code>JR &gt;= JM</code> évite la division par zéro d’un mois entièrement en rupture ; la consommation brute est alors conservée telle quelle.</li></ul>
+<h3 id="h-colonne-semestre-la-saisonnalite">Colonne Semestre — la saisonnalité</h3>
+<div class="code"><div class="cap"><b>[Semestre] — colonne calculée</b></div><pre><code>=SI(MOIS([@[Date Fin Mois]])&lt;=6; "Faible T";
+    SI(MOIS([@[Date Fin Mois]])&gt;6;  "Forte T"; ""))</code></pre></div>
+<p><strong>Faible T</strong> : janvier à juin. <strong>Forte T</strong> : juillet à décembre. Cette colonne devient l’axe <em>colonnes</em> du TCD <code>TCD_CA_A_Faibe&amp;Forte_T</code>, et donc la source du repli saisonnier de la CMMA.</p>
+<div class="note warn"><span class="lbl">Colonne inerte</span><p>Cette colonne marque « Forte » les mois de <strong>juin</strong>, juillet et août, alors que la colonne <code>Semestre</code> classe juin en Faible T. Les deux règles se contredisent d’un mois. Par ailleurs les six autres mois renvoient <code>#N/A</code>, aucune condition n’étant satisfaite. La colonne n’alimente que le TCD <code>TCD_CA_A_Type_CMMA_Antérieue</code>, qui n’est lu par aucune formule du PCDD — elle est donc <strong>inerte</strong>.</p></div>
+<p class="lede">Le calcul repose sur trois niveaux successifs. Il constitue le cœur fonctionnel de l’application et la partie la plus sensible à toute modification.</p>
+<h3 id="h-niveau-1-la-fenetre-de-trois-mois-corrigee-d">Niveau 1 — la fenêtre de trois mois, corrigée de la saison</h3>
+<p>La feuille <code>CMMA</code> choisit d’abord <em>quels</em> trois mois observer. Le principe : une CMMA se calcule sur les trois mois précédents — sauf en début de saison, où les trois mois précédents appartiennent à l’autre régime de transmission. Juin ne prédit pas juillet ; décembre ne prédit pas janvier. Dans ce cas, la fenêtre équivalente de l’année précédente est retenue.</p>
+<div class="tw"><table><thead><tr><th>Mois courant</th><th>Fenêtre retenue</th><th>Année</th><th>Pourquoi</th></tr></thead><tbody><tr><td>Janvier · Février · Mars</td><td>Jan · Fév · Mars</td><td>N−1</td><td>Les 3 mois précédents seraient en Forte T</td></tr><tr><td>Avril · Mai · Juin</td><td>M−1 · M−2 · M−3</td><td>N</td><td>Fenêtre glissante, entièrement Faible T</td></tr><tr><td>Juillet · Août · Septembre</td><td>Juil · Août · Sept</td><td>N−1</td><td>Les 3 mois précédents seraient en Faible T</td></tr><tr><td>Octobre · Novembre · Décembre</td><td>M−1 · M−2 · M−3</td><td>N</td><td>Fenêtre glissante, entièrement Forte T</td></tr></tbody></table></div>
+<p>La formule matricielle <code>CMMA!A8</code> déverse ensuite les lignes correspondantes du TCD <code>Donnée_CMMA_A_Mois</code>, filtrées sur les trois mois, l’année de référence et le site sélectionné. Le résultat occupe <code>CMMA!A8:H31</code> : colonne <strong>F</strong> le produit, colonne <strong>H</strong> la moyenne de consommation ajustée du mois.</p>
+<h3 id="h-niveau-2-la-moyenne-par-produit">Niveau 2 — la moyenne par produit</h3>
+<div class="code"><div class="cap"><b>CMM&amp;Saisie_BC!F8:F15 — « CMMA Calculer si donnée Disponible »</b></div><pre><code>=SI($D$8=""; "";
+   SIERREUR(
+     MOYENNE(FILTRE(CMMA!$H$8:$H$31;
+        (CMMA!$F$8:$F$31=E8) * (CMMA!$H$8:$H$31&lt;&gt;0) * ESTNUM(CMMA!$H$8:$H$31)));
+     ""))</code></pre></div>
+<p>Les mois à zéro et les <code>#N/A</code> hérités de <code>Consommation ajusté</code> sont exclus : la moyenne porte sur les mois réellement observés, et non sur trois mois par convention.</p>
+<h3 id="h-niveau-3-le-repli-saisonnier">Niveau 3 — le repli saisonnier</h3>
+<p>Quand la fenêtre courte n’a rien donné, le calcul se replie sur la moyenne de la <strong>saison correspondante de l’année précédente</strong>, pour le même site et le même produit.</p>
+<div class="code"><div class="cap"><b>CMM&amp;Saisie_BC!G8:G15 — « CMM ajustée BT ou HT (N-1) »</b></div><pre><code>=SI($D$8=""; "";
+   SI($G$4="Forte";
+      SOMME.SI.ENS('CA_A_Faibe&amp;Forte_T'!$G$3:$G$400;     ' colonne « Forte T »
+                   'CA_A_Faibe&amp;Forte_T'!$A$3:$A$400; B8-1;   ' année N−1
+                   'CA_A_Faibe&amp;Forte_T'!$D$3:$D$400; D8;     ' site
+                   'CA_A_Faibe&amp;Forte_T'!$E$3:$E$400; E8);    ' produit
+      SOMME.SI.ENS('CA_A_Faibe&amp;Forte_T'!$F$3:$F$400; … )))  ' colonne « Faible T »</code></pre></div>
+<div class="note retenir"><span class="lbl">Trois conditions que la formule doit conserver</span><p>Cette formule a été reprise depuis les versions antérieures, et les trois faiblesses qu’elle présentait sont levées. Elle filtre désormais explicitement sur le <strong>site</strong> (<code>$D$3:$D$400 = D8</code>), là où elle s’en remettait à l’état du segment. Elle porte sur l’année <strong>N−1</strong> (<code>B8-1</code>), conformément à ce qu’annonce l’en-tête de colonne. Et la saison est déterminée par <code>$G$4</code>, dérivé du mois du bon de commande, plutôt que par le mois courant du poste.</p></div>
+<h3 id="h-l-arbitrage-final">L’arbitrage final</h3>
+<div class="code"><div class="cap"><b>CMM&amp;Saisie_BC!H8:H15 — « CMMA retenue »</b></div><pre><code>=SI($D$8=""; "";
+   SI(ET(ESTNUM(F8); F8&gt;0);
+      F8;                                   ' 1. CMMA sur 3 mois
+      SI(ESTNUM(G8);
+         G8;                                ' 2. repli saisonnier N−1
+         "CMMA non disp")))                 ' 3. échec explicite</code></pre></div>
+<div class="note warn"><span class="lbl">Plage à étendre si un produit est ajouté</span><p>La plage <code>CMMA!$H$8:$H$31</code> est dimensionnée à 24 lignes, soit 3 mois × 8 produits, et le référentiel compte aujourd’hui huit produits actifs.</p><p>L’ajout d’un neuvième produit impose donc d’étendre cette plage dans le même mouvement. À défaut, des lignes sortent de la moyenne sans qu’aucun message ne le signale : la CMMA reste affichée, mais elle est calculée sur une partie seulement des données.</p></div>
+</section>
+
+<section id="s04">
+  <span class="sec-num">04</span>
+  <h2>L’application PCDD</h2>
+<p class="lede">Vingt-trois feuilles, sept tableaux structurés, une requête Power Query, dix-sept procédures VBA. La cartographie du classeur est la suivante.</p>
+<h3 id="h-les-feuilles-par-role">Les feuilles, par rôle</h3>
+<div class="tw"><table><thead><tr><th>Feuille</th><th>Rôle</th></tr></thead><tbody><tr><td><code>ACCUEIL</code></td><td>Menu. Trois tuiles : <strong>Saisie BC</strong>, <strong>Pilotage PCDD</strong> et <strong>Historique des rapports</strong>. Activée à l’ouverture par <code>Workbook_Open</code>.</td></tr><tr><td><code>Guide_d’Utilisation</code></td><td>Notice intégrée.</td></tr><tr><td><strong><code>CMM&amp;Saisie_BC</code></strong></td><td><strong>Étape 1</strong> — CMMA calculée et saisie du bon de commande d’un CSI. Écran « Saisie BC » dans le guide d’utilisation.</td></tr><tr><td><strong><code>Pilotage_PCDD</code></strong></td><td><strong>Étape 2</strong> — arbitrage district : stock disponible, buffer, quantités validées.</td></tr><tr><td><code>Base_BC&amp;CMM_Opérations_en_Cours</code></td><td>File d’attente : tous les BC saisis, non encore arbitrés. Table <code>Tbl_BaseBCCMM_OperationsEnCours</code>, 18 colonnes. Tableau « Opérations en cours » dans le guide d’utilisation.</td></tr><tr><td><code>Rapport_CMD</code></td><td>Lignes arbitrées du mois. Table <code>Tbl_Rapport_CMD</code>, 15 colonnes.</td></tr><tr><td><code>Rapport_CMD_Mds</code></td><td>Synthèse district × produit en mois de stock. Table <code>Tbl_Rapport_CMD_Mds</code>, 16 colonnes.</td></tr><tr><td><code>Rapport_CMD_PDF</code></td><td>Mise en page du rapport soumis au MCD. Zone d’impression <code>$A$1:$O$56</code>.</td></tr><tr><td><strong><code>Rapport_HISTORIQUE PCDD_PDF</code></strong></td><td><strong>Nouveau</strong> — consultation d’un rapport archivé, choisi par année, mois et district. Alimente la tuile « Historique des rapports ».</td></tr><tr><td><code>Signature</code></td><td>Bloc signature, conservé comme ressource.</td></tr><tr><td><code>Base_BC&amp;CMM_Validée&amp;Archivée</code>, <code>Rapport_CMD_Mds __Validée&amp;Archi</code></td><td>Archives. Alimentées par <code>Archiver_Tbl_Rapport_CMD</code>.</td></tr><tr><td><code>Rapport_CSI_Prod_Qte_Valid</code></td><td>Deux TCD de contrôle sur <code>Tbl_Rapport_CMD</code>.</td></tr><tr><td><code>Qte_Disp_DHIS2</code>, <code>CA_A_Mois</code>, <code>CA_A_Faibe&amp;Forte_T</code>, <code>CA_A_Type_CMMA_Antérieue</code>, <code>Donnée_CMMA_A_Mois</code></td><td>Les cinq feuilles-TCD alimentées par Power Query. Ce sont les vues sur la Base Historique ; aucune formule n’y est saisie à la main.</td></tr><tr><td><code>CMMA</code></td><td>Feuille de calcul intermédiaire : sélectionne la fenêtre de trois mois et déverse les consommations ajustées correspondantes.</td></tr><tr><td><code>Liste_Produits</code>, <code>Tableau_Gestion&amp;Suivi_CSI</code>, <code>Liste_Deroulante</code></td><td>Référentiels : produits (<code>Tableau2</code>, désormais doté d’une colonne <strong>Abréviation</strong>), 524 sites avec population et axe saisonnier, listes déroulantes.</td></tr></tbody></table></div>
+<h3 id="h-la-source-unique-power-query">La source unique : Power Query</h3>
+<p>Les cinq TCD partagent le même cache et la même source : la requête Power Query <code>Tble_Data_Produit_Historique_Compl15</code>, qui lit la Base Historique et ajoute deux clés concaténées servant d’axes.</p>
+<div class="code"><div class="cap"><b>Section1.m — requête Power Query</b></div><pre><code>shared Tble_Data_Produit_Historique_Compl15 = let
+    Source = Excel.Workbook(File.Contents("&lt;dossier&gt;\Base_HISTORIQUE_&lt;district&gt;.xlsx"), null, true),
+    Table  = Source{[Item="Tble_Data_Produit_Historique_Compl15", Kind="Table"]}[Data],
+    Types  = Table.TransformColumnTypes(Table, { /* 46 colonnes typées */ }),
+    ID_Site_Produit        = Table.AddColumn(Types, "ID_Site_Produit",
+                               each Text.From([Année]) &amp; [Mois] &amp; [Site] &amp; [Produit]),
+    ID_Site_Faible_Forte_T = Table.AddColumn(ID_Site_Produit, "ID_Site_Faible_Forte_T",
+                               each Text.From([Année]) &amp; [Site])
+in
+    ID_Site_Faible_Forte_T;</code></pre></div>
+<div class="tw"><table><thead><tr><th>Feuille · TCD</th><th>Lignes</th><th>Colonnes / Filtres</th><th>Valeur</th></tr></thead><tbody><tr><td><code>Donnée_CMMA_A_Mois</code></td><td>ID_Site_Produit · Année · Mois · Région · District · Site · Produit · Stock début</td><td>—</td><td><strong>Moyenne</strong> de Consommation ajusté</td></tr><tr><td><code>CA_A_Faibe&amp;Forte_T</code></td><td>Année · Région · District · Site · Produit</td><td><strong>Semestre</strong> en colonnes</td><td><strong>Moyenne</strong> de Consommation ajusté</td></tr><tr><td><code>CA_A_Mois</code></td><td>Région · District · Site · Produit · Stock début</td><td>—</td><td>Moyenne de Consommation ajusté</td></tr><tr><td><code>Qte_Disp_DHIS2</code></td><td>Année · Mois · Région · District · Site · Produit</td><td>—</td><td><strong>Somme</strong> du stock disponible fin de mois</td></tr></tbody></table></div>
+<div class="note"><span class="lbl">Le mécanisme de sélection du CSI</span><p>Il n’y a pas de liste déroulante pour choisir le CSI. Des segments (slicers) pilotent <strong>simultanément les TCD</strong> : <code>Segment_Site1</code> et <code>Segment_District1</code> pour la saisie, auxquels s’ajoutent désormais <code>Segment_Année</code>, <code>Segment_Mois</code> et <code>Segment_District</code> pour la consultation de l’historique des rapports.</p><p>Sélectionner un site réduit chaque TCD à ce site ; la feuille <code>CMM&amp;Saisie_BC</code> lit alors le nom du site dans le TCD lui-même. Autrement dit : <strong>tant que le segment ne réduit pas la vue à un seul site, tout l’écran reste vide.</strong> Ce verrou, déterminant pour le fonctionnement de la feuille, n’est signalé par aucun élément d’interface. La macro <code>Effacer_Ts_Filtre</code> remet tous les segments à zéro.</p></div>
+<div class="code"><div class="cap"><b>CMM&amp;Saisie_BC!D8 — récupération du CSI sélectionné</b></div><pre><code>=SI(NBVAL(UNIQUE(FILTRE(CA_A_Mois!C2:C1000; CA_A_Mois!C2:C1000&lt;&gt;"")))=1;
+     CA_A_Mois!$C$2;
+     "")</code></pre></div>
+<h3 id="h-la-session-mensuelle-etape-par-etape">La session mensuelle, étape par étape</h3>
+<p>Les trois chapitres qui suivent reprennent le déroulé décrit dans le guide d’utilisation. Ils ne répètent pas les gestes de l’officier : ils donnent, pour chaque étape, les feuilles, les formules et les procédures mises en jeu, dans l’ordre où elles s’exécutent. C’est cet ordre qui explique le séquencement du code, et il se perdrait si les procédures n’étaient décrites qu’une à une.</p>
+<h3 id="h-etape-1-la-saisie-des-bons-de-commande">Étape 1 — la saisie des bons de commande</h3>
+<p>Une ligne par produit, huit lignes, une seule colonne saisissable. Trois verrous, portés par des cellules de contrôle, conditionnent l’action des boutons.</p>
+<h4 class="sub" id="h-structure-de-la-grille-lignes-8-a-15">Structure de la grille (lignes 8 à 15)</h4>
+<div class="tw"><table><thead><tr><th>Col.</th><th>En-tête</th><th>Origine</th></tr></thead><tbody><tr><td>B</td><td>Année</td><td>Année courante, ou N−1 si l’on est en janvier</td></tr><tr><td>C</td><td>Mois</td><td>Mois précédent (« Janvier » si l’on est en janvier)</td></tr><tr><td>D</td><td>CSI</td><td>Lu dans le TCD via le segment — voir § 05</td></tr><tr><td>E</td><td>Produit</td><td><code>TRIER(FILTRE(Liste_Deroulante!N8:N102 ; &lt;&gt;""))</code></td></tr><tr><td>F</td><td>CMMA Calculer si donnée Disponible</td><td>Moyenne 3 mois — § 06 niveau 2</td></tr><tr><td>G</td><td>CMM ajustée BT ou HT (N-1)</td><td>Repli saisonnier — § 06 niveau 3</td></tr><tr><td>H</td><td>CMMA retenue</td><td>Arbitrage F → G → « CMMA non disp »</td></tr><tr><td>I</td><td>Quantité Disponible DHIS2</td><td><code>SOMME.SI.ENS</code> sur <code>Qte_Disp_DHIS2</code> (année, mois, produit)</td></tr><tr><td>J</td><td>Stock en Main (MdS)</td><td><code>I / H</code> — mois de stock</td></tr><tr><td><strong>K</strong></td><td><strong>BC (Traitement)</strong></td><td><strong>Seule zone de saisie.</strong> Plage nommée <code>Saisie_BC</code> = <code>$K$8:$K$15</code></td></tr><tr><td>L, M</td><td>Mois BC, Date_Saisie</td><td>Horodatage automatique</td></tr><tr><td>N</td><td>ID_Saisie</td><td><code>Année &amp; Mois &amp; CSI</code> — clé anti-doublon</td></tr><tr><td>O, P</td><td>Région, District</td><td>Repris de <code>CMMA!C8</code> et <code>CMMA!D8</code></td></tr></tbody></table></div>
+<h4 class="sub" id="h-les-trois-verrous">Les trois verrous</h4>
+<div class="fiche"><h4>B1 — saisie complète</h4><p class="trig">« Ok » ou « Non »</p><dl><dt>Test</dt><dd>Aucune erreur dans <code>B8:E15</code>, exactement 8 valeurs numériques dans <code>Saisie_BC</code>, toutes entières</dd><dt>Effet</dt><dd><code>Valider_BC</code> refuse si la valeur diffère de « Ok »</dd></dl></div>
+<div class="fiche"><h4>B2 — anti-doublon BC</h4><p class="trig">« Ok » ou « Doublon »</p><dl><dt>Test</dt><dd><code>NB.SI(Tbl_BaseBCCMM_OperationsEnCours[ID_Saisie] ; N8)</code></dd><dt>Effet</dt><dd><code>Valider_BC</code> refuse si la valeur diffère de « Ok »</dd></dl></div>
+<div class="fiche"><h4>B3 — CSI déjà présent</h4><p class="trig">« Ok » ou « Doublon »</p><dl><dt>Test</dt><dd><code>NB.SI(Tbl_BaseBCCMM_OperationsEnCours[CSI] ; D8)</code></dd><dt>Effet</dt><dd><code>Supprimer_Donnee_BaseBCCMM</code> refuse si la valeur est « Ok » — il n’y a rien à reprendre</dd></dl></div>
+<div class="note"><span class="lbl">Les boutons sont des images pilotées par les verrous</span><p><code>C1</code> et <code>C2</code> sont les inverses de <code>B1</code> et <code>B2</code>. Ils commandent l’affichage de deux images via <code>Worksheet_Calculate</code> : ces images <strong>sont les boutons eux-mêmes</strong>. Le bouton « Valider la saisie » reste donc masqué tant que les contrôles ne sont pas satisfaits, ce que le guide d’utilisation décrit comme le mécanisme de contrôle principal de l’écran.</p><p>Les libellés des boutons étant portés par des images et non par du texte de cellule, ils ne sont pas lisibles dans le classeur autrement qu’à l’écran. La correspondance ci-dessous est la seule trace écrite de ce lien.</p></div>
+<h4 class="sub" id="h-les-trois-boutons">Les trois boutons</h4>
+<div class="tw"><table><thead><tr><th>Libellé à l’écran</th><th>Procédure</th><th>Rôle</th></tr></thead><tbody><tr><td>« Valider la saisie »</td><td><code>Valider_BC</code></td><td>Enregistre le BC dans la file d’attente</td></tr><tr><td>« Reprise de saisie »</td><td><code>Supprimer_Donnee_BaseBCCMM</code></td><td>Recharge un BC déjà enregistré pour correction</td></tr><tr><td>Effacer les filtres</td><td><code>Effacer_Ts_Filtre</code></td><td>Remet tous les segments à zéro</td></tr></tbody></table></div>
+<div class="fiche"><h4>Valider_BC</h4><p class="trig">Bouton « Valider la saisie » · feuille CMM&amp;Saisie_BC</p><dl><dt>Garde</dt><dd><code>B1 = "Ok"</code> et <code>B2 = "Ok"</code>, sinon message et sortie</dd><dt>Action</dt><dd>Ajoute une ligne à <code>Tbl_BaseBCCMM_OperationsEnCours</code> et y colle les valeurs de <code>B8:P15</code></dd><dt>Nettoyage</dt><dd><code>Range("Saisie_BC").ClearContents</code></dd></dl></div>
+<div class="fiche"><h4>Supprimer_Donnee_BaseBCCMM</h4><p class="trig">Bouton « Reprise de saisie » · feuille CMM&amp;Saisie_BC</p><dl><dt>Garde</dt><dd><code>B3 &lt;&gt; "Ok"</code> — le CSI doit être effectivement présent dans la file</dd><dt>Action</dt><dd>Recharge <code>K8:K15</code> depuis <code>L20:L27</code>, où un <code>FILTRE</code> a récupéré les BC déjà enregistrés, puis filtre la table sur le CSI et supprime les lignes correspondantes</dd><dt>Lecture</dt><dd>Malgré son nom, la procédure sert la <strong>reprise</strong> d’une saisie : elle restitue les quantités avant de les retirer de la file, pour que l’officier les corrige et revalide</dd></dl></div>
+<div class="note"><span class="lbl">Répartition des deux événements</span><p>La feuille porte deux gestionnaires. <code>Worksheet_Change</code> reçoit l’argument <code>Target</code> et porte le test <code>Intersect(Target, Me.Range("D8"))</code>, qui déclenche le nettoyage de <code>K8:K15</code> au changement de produit. <code>Worksheet_Calculate</code>, qui ne reçoit pas de <code>Target</code>, ne conserve que l’affichage ou le masquage des boutons selon <code>C1</code> et <code>C2</code>.</p></div>
+<h3 id="h-etape-2-a-le-parametrage-et-l-arbitrage-dist">Étape 2-A — le paramétrage et l’arbitrage district</h3>
+<p>Pour un produit donné, le district dispose de l’ensemble des bons de commande en attente et du stock disponible, et arrête les quantités à livrer. La logique tient dans une quinzaine de cellules de la zone K7:O14 et dans une colonne saisissable.</p>
+<h4 class="sub" id="h-la-table-des-demandes">La table des demandes</h4>
+<div class="code"><div class="cap"><b>Pilotage_PCDD!A18 — déversement, 11 colonnes A:K</b></div><pre><code>=TRIER(
+   CHOISIRCOLS(
+      FILTRE(Tbl_BaseBCCMM_OperationsEnCours[]; $F$10 = Tbl_BaseBCCMM…[Produit]);
+      1; 11; 14; 15; 4; 3; 8; 9; 7; 10; 16);
+   1)</code></pre></div>
+<p>Soit, dans l’ordre : Année · Mois · Région · District · Produit · CSI · Disp DHIS2 · Stock (MdS) · CMMA · BC · Dist. Cible.</p>
+<div class="tw"><table><thead><tr><th>Col.</th><th>En-tête</th><th>Nature</th></tr></thead><tbody><tr><td>A:K</td><td>Année … Dist. Cible</td><td>Déversées, non modifiables</td></tr><tr><td><strong>L</strong></td><td><strong>Qté Validée</strong></td><td><strong>Saisie de l’arbitre</strong>, à partir de la ligne 18</td></tr><tr><td>M</td><td>Stock après livraison</td><td><code>ARRONDI(L/I + H ; 2)</code> — mois de stock résultants</td></tr><tr><td>N</td><td>Observation / Justification</td><td>Saisie libre</td></tr><tr><td>O</td><td>Qte Modifié</td><td><code>K18&lt;&gt;L18</code> — booléen</td></tr><tr><td>X</td><td>—</td><td>Sauvegarde des quantités déjà validées, utilisée par la reprise de saisie</td></tr><tr><td>Y:AB</td><td>—</td><td>Sauvegarde des paramètres MdS et Buffer, par <code>SOMME.SI.ENS</code> sur <code>Tbl_Rapport_CMD_Mds</code></td></tr></tbody></table></div>
+<h4 class="sub" id="h-le-bloc-stock-et-buffer">Le bloc stock et buffer</h4>
+<div class="tw"><table><thead><tr><th>Cellule</th><th>Libellé à l’écran</th><th>Calcul</th></tr></thead><tbody><tr><td><code>M9</code></td><td>Stock début (Traitement)</td><td>Recopié de <code>AH3</code> par <code>Worksheet_Change</code> quand <code>F10</code> change — solde restant du mois précédent</td></tr><tr><td><code>M10</code></td><td>ALLOC PNLP (Traitement)</td><td><strong>Saisie</strong> — allocation reçue du programme national</td></tr><tr><td><code>M12</code></td><td>TOTAL DISPONIBLE</td><td><code>M9 + M10</code></td></tr><tr><td><code>K14</code></td><td>Stock sécurité (MdS)</td><td><strong>Saisie</strong> — taux de réserve</td></tr><tr><td><code>L14</code></td><td>BUFFER</td><td><code>K14 × M12</code></td></tr><tr><td><code>N10</code></td><td>DIST.</td><td><code>SOMME(L18:L1000)</code> — total distribué</td></tr><tr><td><code>O10</code></td><td>Stock Restant th</td><td><code>M12 − N10</code></td></tr><tr><td><code>M14</code></td><td><strong>STOCK NET FINAL</strong></td><td><code>O10 − L14</code> — <strong>doit rester ≥ 0</strong></td></tr><tr><td><code>O12</code></td><td>Disponibilité en Mds</td><td><strong>Saisie obligatoire</strong></td></tr><tr><td><code>F14</code> · <code>G14</code> · <code>H14</code> · <code>I14</code></td><td>MdS et Buffer (jours), CSI puis HD</td><td>Saisie — recopiés dans la synthèse district</td></tr></tbody></table></div>
+<div class="note"><span class="lbl">La raison d’être du stock de sécurité</span><p>La réserve paramétrée en <code>K14</code> couvre le risque de retard de l’ONPPC, qui doit approvisionner les districts avant le début de chaque trimestre et livre parfois après. Sans elle, le district ne peut pas honorer les bons de commande du premier mois du trimestre. Le pourcentage retenu doit donc tenir compte du risque de retard et de la situation du stock.</p><p>Les libellés <code>K13</code> et <code>L13</code> portent la mention « T3 », qui désigne le trimestre. Le mécanisme valant pour chaque trimestre, une formulation générique éviterait l’ambiguïté — le guide d’utilisation emploie déjà « Stock sécurité trimestre suivant (% d’un MdS) ».</p></div>
+<p>La ligne 3, colonnes W à AD, agrège l’ensemble en une ligne de synthèse district, écrite telle quelle dans <code>Tbl_Rapport_CMD_Mds</code> : stock avant distribution, mois de stock correspondants, total BC, CMMA district, total à distribuer, solde restant, mois de stock du solde, disponibilité MdS.</p>
+<h4 class="sub" id="h-le-bouton-d-arbitrage">Le bouton d’arbitrage</h4>
+<div class="fiche"><h4>Ajouter_Rapport_CMD</h4><p class="trig">Bouton · feuille Pilotage_PCDD · quatre gardes successives</p><dl><dt>Garde 1</dt><dd>Aucune cellule vide dans la colonne <code>L</code> jusqu’à la dernière ligne de <code>F</code></dd><dt>Garde 2</dt><dd><code>I2 &lt;&gt; "Doublon"</code> — le produit n’est pas déjà dans <code>Tbl_Rapport_CMD</code></dd><dt>Garde 3</dt><dd><code>M14 &gt;= 0</code> — le stock net final n’est pas négatif</dd><dt>Garde 4</dt><dd><code>O12</code> renseignée</dd><dt>Action</dt><dd>Copie <code>A18:O{dernière}</code> dans <code>Tbl_Rapport_CMD</code> ; écrit <code>M3:O3</code>, <code>F10</code>, <code>F14:I14</code>, <code>W3:AD3</code> et <code>O12</code> dans <code>Tbl_Rapport_CMD_Mds</code></dd><dt>Nettoyage</dt><dd>Vide <code>F10:I10</code>, <code>L18:L209</code>, <code>M9:M10</code>, <code>K14</code> et <code>O12</code></dd></dl></div>
+<div class="note"><span class="lbl">Ordre des gardes et coupure d’affichage</span><p>Les quatre gardes s’exécutent <strong>avant</strong> <code>Application.ScreenUpdating = False</code>. Une sortie par <code>Exit Sub</code> laisse donc l’affichage intact.</p></div>
+<div class="note stop"><span class="lbl">Le contrôle bloquant</span><p>La garde 3 est le principal garde-fou de l’outil. Lorsque le total des quantités validées dépasse le stock disponible diminué du stock de sécurité, <code>M14</code> devient négatif et la procédure refuse d’alimenter le rapport. Le guide d’utilisation présente ce contrôle comme empêchant la génération du rapport : il porte en réalité sur l’<strong>ajout au rapport</strong>, étape qui précède l’export PDF.</p></div>
+<h3 id="h-etape-2-b-le-rapport-et-le-circuit-de-valida">Étape 2-B — le rapport et le circuit de validation du MCD</h3>
+<p>Le rapport de distribution est une feuille de mise en page qui restitue les données déposées par les macros. Sa validation par le MCD est une boucle : tant qu’un amendement est demandé, l’arbitrage reprend et le rapport est régénéré.</p>
+<h4 class="sub" id="h-rapport-cmd-pdf">Rapport_CMD_PDF</h4>
+<p>Deux blocs. En haut, lignes 10 à 17, une ligne par produit du référentiel, chaque colonne étant un <code>RECHERCHEX</code> sur <code>Tbl_Rapport_CMD_Mds</code>.</p>
+<div class="code"><div class="cap"><b>Rapport_CMD_PDF!C10:M17 — schéma général</b></div><pre><code>=SIERREUR(RECHERCHEX($A10; Tbl_Rapport_CMD_Mds[Produits]; Tbl_Rapport_CMD_Mds[&lt;colonne&gt;]); "")</code></pre></div>
+<p>Les deux dernières colonnes sont calculées autrement : <strong>CSI Desservi</strong> compte les CSI dont la quantité validée est supérieure à zéro, <strong>Risques De Rupture</strong> ceux dont le stock après livraison est inférieur ou égal à 1 MdS. Cette borne correspond au code couleur du guide d’utilisation, où le vert commence au-delà de 1 MdS.</p>
+<p>En bas, à partir de la ligne 19, le <strong>plan de distribution des produits par CSI</strong> : un tableau croisé où les CSI occupent les lignes et les produits les colonnes, désignés par leur abréviation issue de <code>Tableau2[Abréviation]</code>. La zone d’impression couvre <code>$A$1:$O$56</code>.</p>
+<div class="fiche"><h4>Exporter_Rapport_CMD_PDF</h4><p class="trig">Bouton · feuille Pilotage_PCDD</p><dl><dt>Séquence</dt><dd>Écrit dans <code>F10</code> le produit piloté, lu dans <code>Rapport_CMD!E2</code> → <code>RefreshAll</code> et recalcul complet → lit le nom du fichier en <code>M1</code> → fixe la zone d’impression jusqu’à la dernière ligne utile → exporte en PDF → revient sur le pilotage</dd><dt>Chemin</dt><dd>Codé en dur — dossier <code>Rapport_MCD_PDF\</code> de l’officier, point n° 4 de la checklist du § 02</dd><dt>Produit</dt><dd>Repris de <code>Rapport_CMD!E2</code>, c’est-à-dire du premier produit effectivement piloté ; l’écriture dans <code>F10</code> sert à propager l’année et le mois vers <code>N3</code> et <code>O3</code>, utilisés par le PDF</dd><dt>Robustesse</dt><dd>Gestion d’erreur complète et restauration de l’affichage sur une étiquette de sortie unique</dd></dl></div>
+<h4 class="sub" id="h-la-boucle-d-approbation-du-mcd">La boucle d’approbation du MCD</h4>
+<p>Le rapport exporté est soumis au MCD, qui peut demander des amendements. Ceux-ci imposent de revenir sur l’arbitrage, puis de régénérer le rapport. C’est la procédure ci-dessous qui rend ce retour possible : elle n’est pas un chemin de rattrapage en cas d’erreur, mais une étape normale du circuit.</p>
+<div class="fiche"><h4>Filtrer_Produit_Rapport_CMD</h4><p class="trig">Bouton « Reprise de saisie » · feuille Pilotage_PCDD</p><dl><dt>Garde</dt><dd><code>I3 = "Ok"</code> — le produit est bien présent dans <code>Tbl_Rapport_CMD</code></dd><dt>Restauration</dt><dd>Recopie <code>X18:X209</code> dans <code>L18:L209</code> — les quantités validées — et <code>Y17:AB17</code> dans <code>F14:I14</code> — les paramètres MdS et Buffer</dd><dt>Retrait</dt><dd>Filtre et supprime les lignes du produit dans <code>Tbl_Rapport_CMD</code> et <code>Tbl_Rapport_CMD_Mds</code>, puis purge les lignes 24 à 1000 de <code>Rapport_CMD_PDF</code></dd><dt>Portée</dt><dd>Un seul produit à la fois, celui sélectionné en <code>F10</code>. Un amendement portant sur plusieurs produits impose de répéter l’opération</dd></dl></div>
+<h3 id="h-etape-3-finaliser-et-archiver">Étape 3 — finaliser et archiver</h3>
+<p>L’archivage clôt le mois. Il verse le rapport final dans les tables d’archive, purge les tables de travail et rend possible l’ouverture du mois suivant — sans lui, aucune nouvelle session ne peut démarrer.</p>
+<div class="fiche"><h4>Archiver_Tbl_Rapport_CMD</h4><p class="trig">Bouton · clôture du mois</p><dl><dt>Garde</dt><dd><code>Tbl_Rapport_CMD</code> non vide</dd><dt>Action</dt><dd>Recopie les valeurs vers <code>Base_BC&amp;CMM_Validée&amp;Archivée</code> et <code>Rapport_CMD_Mds __Validée&amp;Archi</code></dd><dt>Purge</dt><dd><code>DataBodyRange.Delete</code> sur les tables de <code>Rapport_CMD</code>, <code>Base_BC&amp;CMM_Opérations_en_Cours</code> et <code>Rapport_CMD_Mds</code></dd><dt>Reprise</dt><dd>Réécrit ensuite la formule de <code>Pilotage_PCDD!AH3</code> par <code>FormulaLocal</code>, pour garantir le report du solde à l’ouverture de la session suivante</dd><dt>Portée</dt><dd>Irréversible : aucune reprise n’est possible après archivage</dd></dl></div>
+<div class="note"><span class="lbl">Pourquoi la purge passe par le corps de table</span><p>La purge vide <code>DataBodyRange</code> au lieu de supprimer des lignes entières. Le <code>ListObject</code> conserve ainsi sa structure : les formules qui référencent ces trois tables — au premier rang <code>Pilotage_PCDD!AH3</code>, qui reporte le solde du mois précédent — gardent leur cible. <code>Filtrer_Produit_Rapport_CMD</code>, qui opère sur les mêmes tables, suit la même règle.</p></div>
+<div class="note"><span class="lbl">Aucune trace des tours de la boucle</span><p>Le classeur ne conserve ni statut du rapport, ni PDF successifs, ni mention d’un amendement : l’archive ne retient que l’état final. C’est le choix retenu pour le projet — seul le rapport final signé fait foi.</p></div>
+<h4 class="sub" id="h-la-consultation-de-l-historique">La consultation de l’historique</h4>
+<p>La feuille <code>Rapport_HISTORIQUE PCDD_PDF</code>, accessible depuis la troisième tuile de l’ACCUEIL, reconstitue un rapport déjà archivé. Elle lit la table d’archive <code>Tbl_Rapport_CMD_Mds__ArchivER</code> par <code>SOMME.SI.ENS</code>, filtrée sur l’année, le mois et le district choisis par les segments <code>Segment_Année</code>, <code>Segment_Mois</code> et <code>Segment_District</code>.</p>
+<p>C’est la feuille que le guide d’utilisation désigne par « Historique des rapports » dans sa quatrième vérification préalable : avant d’engager une nouvelle session, l’officier y confirme que le mois précédent a bien été archivé.</p>
+<div class="note"><span class="lbl">Titre d’impression</span><p>Le titre d’impression de cette feuille porte sur les lignes 19 à 23 : l’en-tête du rapport se répète d’une page à l’autre.</p></div>
+</section>
+
+<section id="s05">
+  <span class="sec-num">05</span>
+  <h2>Développement et maintenance</h2>
+<p class="lede">Dix-sept procédures dans le PCDD, dix-neuf dans le Module de Visualisation. La majorité sont câblées à un bouton ou à un événement ; le reste est constitué de macros enregistrées et de reliquats de mise au point.</p>
+<h3 id="h-pcdd-lt-district-gt-xlsm">PCDD_&lt;district&gt;.xlsm</h3>
+<div class="tw"><table><thead><tr><th>Module</th><th>Procédure</th><th>Déclencheur</th><th>Statut</th></tr></thead><tbody><tr><td><code>ThisWorkbook</code></td><td><code>Workbook_Open</code></td><td>Ouverture</td><td>Actif — active ACCUEIL, <code>RefreshAll</code>, message de confirmation</td></tr><tr><td><code>Feuil3</code></td><td><code>Worksheet_Calculate</code></td><td>Recalcul de <code>CMM&amp;Saisie_BC</code></td><td>Actif — affiche ou masque les boutons selon <code>C1</code> et <code>C2</code> ; contient un bloc inactif (§ 07)</td></tr><tr><td><code>Feuil9</code></td><td><code>Worksheet_Change</code></td><td>Modification de <code>Pilotage_PCDD</code></td><td>Actif — réagit à <code>F10</code> et à <code>F14:I14</code></td></tr><tr><td><code>Feuil9</code></td><td><code>Worksheet_Calculate</code></td><td>Recalcul de <code>Pilotage_PCDD</code></td><td>Actif — affichage des pictogrammes selon <code>P2</code> / <code>P3</code></td></tr><tr><td><code>Valider_BC</code></td><td><code>Valider_BC</code></td><td>Bouton « Valider la saisie »</td><td>Actif</td></tr><tr><td><code>Supprimer_Donnee_BaseBCCMM</code></td><td><code>Supprimer_Donnee_BaseBCCMM</code></td><td>Bouton « Reprise de saisie », écran 1</td><td>Actif</td></tr><tr><td><code>Effacer_Ts_Filtre</code></td><td><code>Effacer_Ts_Filtre</code></td><td>Bouton</td><td>Actif</td></tr><tr><td><code>Ajouter_Rapport_CMD</code></td><td><code>Ajouter_Rapport_CMD</code></td><td>Bouton</td><td>Actif</td></tr><tr><td><code>Module2</code></td><td><code>Filtrer_Produit_Rapport_CMD</code></td><td>Bouton « Reprise de saisie », écran 2</td><td>Actif — boucle d’approbation du MCD</td></tr><tr><td><code>Archiver_Tbl_Rapport_CMD</code></td><td><code>Archiver_Tbl_Rapport_CMD</code></td><td>Bouton</td><td>Actif</td></tr><tr><td><code>Exporter_Rapport_CMD_PDF</code></td><td><code>Exporter_Rapport_CMD_PDF</code></td><td>Bouton</td><td>Actif — produit et chemin écrits en dur</td></tr><tr><td><code>Copier_Valeurs_K_vers_L</code></td><td><code>Copier_Valeurs_K_vers_L</code></td><td>—</td><td>Doublon de la logique de <code>Worksheet_Change</code></td></tr><tr><td><code>Module3</code></td><td><code>Effacer_Donnee_Filtre</code></td><td>—</td><td>Ancienne version de <code>Filtrer_Produit_Rapport_CMD</code></td></tr><tr><td><code>Module5</code></td><td><code>Ajouter_Rapport_CMD_Mds</code></td><td>—</td><td>Extrait de <code>Ajouter_Rapport_CMD</code>, non appelé</td></tr><tr><td><code>Module6</code></td><td><code>macro</code></td><td>—</td><td>Une ligne : <code>K8:K15 = L20:L27</code></td></tr><tr><td><code>Module7</code> · <code>Module8</code> · <code>Module9</code></td><td><code>Macro1</code> · <code>Macro2</code> · <code>Macro3</code></td><td>—</td><td>Macros enregistrées, sans effet utile</td></tr><tr><td><code>Module1</code> · <code>Module4</code></td><td>—</td><td>—</td><td>Vides</td></tr></tbody></table></div>
+<h3 id="h-module-visualisation-lt-district-gt-xlsm">Module_Visualisation_&lt;district&gt;.xlsm</h3>
+<div class="tw"><table><thead><tr><th>Procédure</th><th>Déclencheur</th><th>Rôle · statut</th></tr></thead><tbody><tr><td><code>Tout_Executer</code></td><td>Bouton</td><td>Enchaîne la capture puis le transfert ; s’arrête si l’une des deux échoue</td></tr><tr><td><code>rapport_CSI_JPG</code></td><td>Bouton, et <code>Tout_Executer</code></td><td><code>Function … As Boolean</code> — export image de <code>Rapport_CSI</code> vers le dossier <code>Photos</code></td></tr><tr><td><code>Copier_Historique_Completude</code></td><td>Bouton « Sauvegarde », et <code>Tout_Executer</code></td><td><code>Function … As Boolean</code> — écriture vers la Base Historique : quatre gardes, bascule vers <code>Compl15</code> au 15</td></tr><tr><td><code>coller</code></td><td>Bouton « Coller »</td><td>Colle l’export DHIS2 en valeurs et réinstalle les formules de <code>Donnée_Importer</code></td></tr><tr><td><code>Vide_Donnée_Importer</code></td><td>Bouton « Vider_Exporter »</td><td>Purge la zone d’import ; déprotège puis reprotège</td></tr><tr><td><code>rapport_CSE_PDF</code></td><td>Bouton</td><td>Export PDF de la feuille <code>Rapport_CSE</code></td></tr><tr><td><code>Actualiser</code></td><td>Bouton</td><td>Actualise les tableaux croisés du module</td></tr><tr><td><code>Calculer_NB_SI_ENS_Depuis_FichierFerme</code></td><td><code>Worksheet_Calculate</code></td><td>Compte des lignes de l’historique sans ouvrir le classeur</td></tr><tr><td><code>Completude_Du_DropButtonClick</code></td><td>Contrôle de la feuille</td><td>Sélection de la date de complétude</td></tr><tr><td><code>CreerDossierSiAbsent</code></td><td>Appelée</td><td>Crée l’arborescence de sortie si elle n’existe pas</td></tr><tr><td><code>CopierVersHistorique</code></td><td>—</td><td>Écriture vers <code>Data_Produit_Historique</code>, format v1</td></tr><tr><td><code>SupprimerLignesHistorique</code></td><td>Feuille <code>Supprimer_CSI_historique</code></td><td>Suppression par filtre Année / Mois / Centre dans la Base Historique</td></tr><tr><td><code>Ouvrir_Fermer_Base_HISTORIQUE_DSX</code></td><td>—</td><td>Ouvre et referme la Base Historique en lecture seule</td></tr><tr><td><code>test</code>, <code>a_efface</code>, <code>Macro1</code>, <code>Macro2</code>, <code>UserForm_Click</code></td><td>—</td><td>Reliquats et formulaires non référencés</td></tr></tbody></table></div>
+<div class="note"><span class="lbl">Conventions du projet</span><p>Aucun module ne déclare <code>Option Explicit</code>, et plusieurs variables sont utilisées sans <code>Dim</code>. Activer <code>Option Explicit</code> sur l’ensemble du projet, puis compiler, révèle en une passe les fautes de frappe qui se traduisent aujourd’hui par des comportements silencieux.</p><p>Les feuilles sont protégées par le mot de passe <code>Chemonics</code>, écrit en clair dans les procédures qui déprotègent puis reprotègent. Cette protection vise l’écrasement accidentel des formules par l’utilisateur ; elle ne restreint pas l’accès au code, qui reste ouvert à tout intervenant autorisé.</p></div>
+<p class="lede">Les trois opérations courantes, et l’ensemble des emplacements concernés par chacune.</p>
+<h3 id="h-ajouter-un-produit">Ajouter un produit</h3>
+<p>Le référentiel compte huit produits actifs. En ajouter un touche les deux classeurs.</p>
+<ol class="body"><li><strong>Module de Visualisation</strong> · <code>dataname!T_Produits</code> — ajouter la correspondance libellé DHIS2 → produit retenu, avec statut et catégorie.</li><li><strong>Module de Visualisation</strong> · <code>Liste_Deroulante</code> — vérifier que le TCD produit et la colonne de séquence reprennent le nouveau libellé.</li><li><strong>PCDD</strong> · <code>Liste_Produits!Tableau2</code> — ajouter la ligne, statut « Actif », sans oublier la colonne <strong>Abréviation</strong> utilisée par le plan de distribution par CSI.</li><li><strong>PCDD</strong> · actualiser le TCD de <code>Liste_Deroulante</code>.</li><li><strong>PCDD</strong> · étendre les plages figées : <code>CMM&amp;Saisie_BC!K8:K15</code> et <code>L20:L27</code>, la plage nommée <code>Saisie_BC</code>, <code>CMMA!$H$8:$H$31</code> (3 × nombre de produits), <code>Rapport_CMD_PDF!A10:A17</code> et les <code>RECHERCHEX</code> associés.</li><li><strong>PCDD</strong> · le contrôle <code>B1</code> exige <code>NB(Saisie_BC)=8</code> — cette constante est à mettre à jour.</li></ol>
+<div class="note warn"><span class="lbl">Point de vigilance</span><p>Le nombre 8 est écrit en dur à trois endroits au moins : la formule <code>B1</code>, la plage <code>Saisie_BC</code> et la plage <code>CMMA!H8:H31</code>. Ajouter un produit est donc une opération manuelle, à vérifier de bout en bout sur un jeu de données de test.</p></div>
+<h3 id="h-ajouter-ou-desactiver-un-csi">Ajouter ou désactiver un CSI</h3>
+<ol class="body"><li><strong>Module de Visualisation</strong> · <code>Liste_Site</code> — Région / District / Site, et <code>Liste_Site1</code> pour le statut.</li><li><strong>PCDD</strong> · <code>Tableau_Gestion&amp;Suivi_CSI</code> — même identité, plus type, axe saisonnier de livraison, coordonnées et les six tranches de population.</li><li>Actualiser le TCD des sites dans <code>Liste_Deroulante</code>, filtré sur le statut et le district.</li><li>La colonne <code>Statut</code> de <code>Donnée_Importer</code> croise district actif × site actif : un site inactif est automatiquement écarté de l’import.</li></ol>
+<h3 id="h-produire-la-copie-d-un-nouveau-district">Produire la copie d’un nouveau district</h3>
+<p>L’application étant configurée district par district, chaque nouvelle installation suppose de reprendre les chemins en fonction de l’emplacement des fichiers de l’officier concerné.</p>
+<ol class="body"><li>Copier les trois fichiers dans le dossier de l’officier et les renommer avec le suffixe du district.</li><li>Ré-encoder les chemins recensés au § 02, sans en sauter un.</li><li>Créer les sous-dossiers de sortie <code>Rapport_MCD_PDF</code>, <code>Rapport_CSI</code> et <code>Rapport_CSE</code>, faute de quoi les macros d’export s’arrêtent sur « dossier introuvable ».</li><li><strong>Vérifier l’invariant :</strong> ouvrir le Module de Visualisation et le PCDD côte à côte et confirmer qu’ils désignent le même fichier historique, caractère pour caractère. C’est le seul contrôle qui détecte la panne silencieuse décrite au § 02.</li><li>Filtrer <code>Tableau_Gestion&amp;Suivi_CSI</code> sur le district cible, ou laisser le référentiel national et s’appuyer sur le segment District.</li><li>Faire un cycle complet de test — saisie, sauvegarde, actualisation district, saisie BC, arbitrage, export, archivage — sur un mois connu, et comparer la CMMA obtenue à un calcul manuel.</li></ol>
+<h3 id="h-ouvrir-le-code">Ouvrir le code</h3>
+<p>Alt+F11 ouvre l’éditeur VBA ; le projet n’est pas protégé par mot de passe. Première opération recommandée : ajouter <code>Option Explicit</code> en tête de chaque module, puis <em>Débogage → Compiler VBAProject</em>. La compilation signale immédiatement les variables non déclarées recensées au § 11.</p>
+<h3 id="h-la-documentation-elle-meme">La documentation elle-même</h3>
+<p>Ce guide n’est pas rédigé dans Word. Il est produit à partir d’un fichier de contenu unique, <code>contenu.json</code>, dont deux moteurs tirent la version Word et la page web. Les deux rendus ne peuvent donc pas diverger, et une correction ne se fait qu’une fois.</p>
+<div class="note stop"><span class="lbl">Ne pas corriger le Word</span><p>Le <code>.docx</code> et le <code>.html</code> sont des produits de construction : ils sont écrasés au build suivant. Toute correction de fond passe par <code>contenu.json</code>.</p><p>Le Word reste bien entendu annotable en corrections suivies pour une relecture — c’est son usage — mais les corrections acceptées doivent être reportées dans la source.</p></div>
+<div class="code"><div class="cap"><b>Reconstruire les deux livrables</b></div><pre><code>git clone &lt;dépôt&gt;
+cd pcdd-guide-developpeur
+npm install
+npm run dist
+
+# dist/Guide_developpeur_PCDD.docx   document Word
+# dist/Guide_developpeur_PCDD.html   page autonome</code></pre></div>
+<div class="tw"><table><thead><tr><th>Fichier</th><th>Rôle</th></tr></thead><tbody><tr><td><code>contenu.json</code></td><td>La source — métadonnées et six parties, en blocs typés</td></tr><tr><td><code>render-html.js</code></td><td>Rendu web : sommaire, encarts, blocs de code</td></tr><tr><td><code>render-docx.js</code></td><td>Rendu Word : charte GHSC-PSM, tableaux natifs, texte modifiable</td></tr><tr><td><code>wrap.py</code></td><td>Enveloppe le fragment HTML en page autonome, nomme les livrables</td></tr><tr><td><code>style.css</code></td><td>Feuille de style du rendu web</td></tr><tr><td><code>historique/extract.py</code></td><td>Reconstitue <code>contenu.json</code> depuis un rendu HTML — secours</td></tr></tbody></table></div>
+<div class="note"><span class="lbl">Les types de blocs</span><p>Un bloc porte un type : <code>p</code>, <code>h2</code>, <code>h3x</code>, <code>lede</code>, <code>ul</code>, <code>ol</code>, <code>note</code>, <code>fiche</code>, <code>code</code>, <code>table</code>. Dans le texte, `<code> </code>code<code> </code><code>, </code><strong>gras</strong><code> et </code><em>italique</em>` sont interprétés. Les largeurs de colonnes des tableaux sont calculées d’après le contenu.</p><p>La charte est définie à deux endroits qui doivent rester alignés : <code>style.css</code> pour le web, l’en-tête de <code>render-docx.js</code> pour le Word.</p></div>
+</section>
+
+<section id="s06">
+  <span class="sec-num">06</span>
+  <h2>Contrôles, dépannage et tests</h2>
+<p class="lede">Les contrôles du système ne se ressemblent pas : certains affichent un message, d’autres masquent un bouton sans rien dire. Le tableau ci-dessous les rassemble, avec la condition détectée, le signal produit et le geste attendu.</p>
+<div class="tw"><table><thead><tr><th>Contrôle</th><th>Condition détectée</th><th>Signal</th><th>Action attendue</th></tr></thead><tbody><tr><td>Saisie des BC — produits renseignés</td><td>Une quantité manque pour au moins un produit du référentiel</td><td>Le bouton « Valider la saisie » ne s’affiche pas</td><td>Compléter les quantités manquantes</td></tr><tr><td>Saisie des BC — valeurs entières</td><td>Une quantité comporte une décimale ou du texte</td><td>Le bouton « Valider la saisie » ne s’affiche pas</td><td>Corriger la valeur</td></tr><tr><td>Saisie des BC — doublon</td><td>Un BC existe déjà pour ce CSI et cette période</td><td>Message « Doublon détecté », saisie refusée</td><td>Reprendre la saisie existante plutôt que d’en créer une</td></tr><tr><td>Saisie des BC — période antérieure</td><td>Une opération d’une période précédente demeure dans « Opérations en cours »</td><td>Validation bloquée</td><td>Terminer le pilotage et l’archivage de la période précédente</td></tr><tr><td>Arbitrage — colonne de saisie complète</td><td>Une cellule de la colonne <code>L</code> est vide</td><td>Message « Veuillez renseigner toutes les cellules de la colonne L »</td><td>Compléter la colonne des quantités validées</td></tr><tr><td>Arbitrage — disponibilité en MdS</td><td>La cellule <code>O12</code> est vide</td><td>Message, et sélection automatique de <code>O12</code></td><td>Saisir la couverture visée</td></tr><tr><td>Arbitrage — stock net final</td><td><code>M14</code> est négatif : le total validé dépasse le stock distribuable</td><td>Message « Stock insuffisant pour la distribution » ; le produit n’est pas ajouté au rapport</td><td>Réduire le MdS cible ou les quantités validées</td></tr><tr><td>Arbitrage — produit déjà au rapport</td><td>Le produit figure déjà dans <code>Tbl_Rapport_CMD</code></td><td>Message « Doublon détecté pour ce produit »</td><td>Supprimer l’ancienne ligne avant de relancer</td></tr><tr><td>Rapport final — tous produits arbitrés</td><td>Un des huit produits n’a pas été ajouté au rapport (<code>P3</code> ≠ OK)</td><td>Aucun message : les boutons du rapport PDF et de l’archivage restent masqués</td><td>Arbitrer et ajouter les produits restants</td></tr><tr><td>Export PDF — nom de fichier</td><td>La cellule <code>M1</code> est vide</td><td>Message « Le nom du fichier est vide »</td><td>Vérifier la feuille de rapport</td></tr><tr><td>Export PDF — dossier de sortie</td><td>Le dossier <code>Rapport_MCD_PDF\</code> n’existe pas</td><td>Message « dossier introuvable »</td><td>Créer le dossier, ou corriger le chemin du § 01</td></tr><tr><td>Sauvegarde — enregistrement existant</td><td>La clé concaténée figure déjà dans la Base Historique (colonne <code>AA</code>)</td><td>Signal « Doublons »</td><td>Vérifier la période ; supprimer l’enregistrement avant de resauvegarder</td></tr></tbody></table></div>
+<div class="note stop"><span class="lbl">Deux contrôles, deux comportements</span><p>Le contrôle du stock net final affiche un message explicite : l’officier sait pourquoi il est arrêté. Le contrôle du rapport final, lui, se contente de masquer les boutons. Aucun message n’est émis.</p><p>C’est la source d’appel la plus probable au démarrage : un officier qui cherche le bouton du rapport alors qu’il devrait chercher le produit non arbitré. Le guide d’utilisation et la fiche opératoire le signalent tous deux.</p></div>
+<h3 id="h-tests-de-non-regression-apres-modification">Tests de non-régression après modification</h3>
+<p>Toute intervention sur les formules de la CMMA, sur les plages figées ou sur les procédures d’archivage doit être suivie des vérifications ci-dessous, sur une copie et non sur le classeur de l’officier.</p>
+<ol class="body"><li>Ouvrir le PCDD et confirmer que l’actualisation Power Query se termine sans message.</li><li>Sur un CSI dont l’historique est complet, vérifier que la CMMA affichée est identique à celle relevée avant la modification.</li><li>Sur un CSI sans historique récent, vérifier que le repli N−1 s’applique et que la mention « CMMA non disp » apparaît lorsque aucune référence n’existe.</li><li>Saisir un BC, le valider, et confirmer que la ligne arrive dans « Opérations en cours » et que la zone de saisie se vide.</li><li>Arbitrer les huit produits et confirmer que les boutons du rapport et de l’archivage apparaissent seulement après le huitième.</li><li>Produire le PDF, puis archiver, et vérifier que le solde reporté en <code>M9</code> correspond au solde restant du mois archivé.</li></ol>
+<div class="note warn"><span class="lbl">Avant toute modification</span><p>Dupliquer les trois classeurs et travailler sur la copie. L’archivage est irréversible : une fois la session clôturée, les données quittent les tables de travail et le mois ne peut plus être repris.</p></div>
+</section>
+
+</main>
+</div>
+</div>
+
+<footer>
+<div class="wrap">
+  <div class="foot-top">
+    <div class="foot-id">
+      <p class="prog">PCDD — Plan de Contrôle de Distribution des Districts</p>
+      <p class="dev">Développé par Chemonics International dans le cadre du projet GHSC-PSM.
+Développeur : Boubacar Garba. Niger  ·  Octobre 2026.</p>
+    </div>
+    <img class="logo-usa" src="data:image/png;base64,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" alt="United States of America">
+  </div>
+  <p><em>*Document établi sur le classeur de référence `PCDD.xlsm`, avec la copie du district d’Illéla — `PCDD_Illela.xlsm`, `Module_Visualisation_Illela.xlsm`, `Base_HISTORIQUE_Illela.xlsx` — pour les exemples de configuration. Les chemins cités en exemple sont ceux de cette installation ; toute autre s’obtient en substituant le compte de l’officier et le nom du district. Formules transcrites en notation française ; les noms de cellules, de plages et de procédures sont ceux du code.*</em></p>
+  <p class="foot-legal">Le projet U.S. Government Global Health Supply Chain Program — Procurement and Supply Management (GHSC-PSM) est financé par le gouvernement des États-Unis, contrat n° AID-OAA-I-15-0004. GHSC-PSM est mis en œuvre par Chemonics International. Les opinions exprimées dans ce document ne reflètent pas nécessairement celles de l’Agence des États-Unis pour le développement international ni du gouvernement des États-Unis.</p>
+</div>
+</footer>
+
+
+</body>
+</html>

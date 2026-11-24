@@ -1,0 +1,2214 @@
+{
+ "META": {
+  "titre": "Guide développeur PCDD",
+  "standfirst": "Documentation technique de l’application Excel de contrôle des intrants antipaludiques",
+  "kicker": [
+   "Niger",
+   "PCDD — PLAN DE CONTRÔLE DE DISTRIBUTION DES DISTRICTS",
+   "Octobre 2026"
+  ],
+  "chiffres": [
+   [
+    "Parties",
+    "6"
+   ],
+   [
+    "Classeurs",
+    "3"
+   ],
+   [
+    "Procédures VBA",
+    "36"
+   ],
+   [
+    "Contrôles recensés",
+    "12"
+   ]
+  ],
+  "dev": "Développé par Chemonics International dans le cadre du projet GHSC-PSM.\nDéveloppeur : Boubacar Garba. Niger  ·  Octobre 2026.",
+  "colophon": "*Document établi sur le classeur de référence `PCDD.xlsm`, avec la copie du district d’Illéla — `PCDD_Illela.xlsm`, `Module_Visualisation_Illela.xlsm`, `Base_HISTORIQUE_Illela.xlsx` — pour les exemples de configuration. Les chemins cités en exemple sont ceux de cette installation ; toute autre s’obtient en substituant le compte de l’officier et le nom du district. Formules transcrites en notation française ; les noms de cellules, de plages et de procédures sont ceux du code.*",
+  "legal": "Le projet U.S. Government Global Health Supply Chain Program — Procurement and Supply Management (GHSC-PSM) est financé par le gouvernement des États-Unis, contrat n° AID-OAA-I-15-0004. GHSC-PSM est mis en œuvre par Chemonics International. Les opinions exprimées dans ce document ne reflètent pas nécessairement celles de l’Agence des États-Unis pour le développement international ni du gouvernement des États-Unis."
+ },
+ "SECTIONS": [
+  {
+   "num": "01",
+   "court": "Architecture",
+   "titre": "Architecture générale et prérequis",
+   "blocks": [
+    {
+     "t": "lede",
+     "v": "Le PCDD contrôle les quantités d’intrants antipaludiques que les formations sanitaires commandent à leur district. Il substitue à un arbitrage discrétionnaire un arbitrage adossé à une consommation moyenne mensuelle calculée, tout en restant dans Excel — parce que l’e-SIGL reprendra ces fonctions et que le Ministère refuse un système parallèle."
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Portée de ce document",
+     "paras": [
+      "Le PCDD est déployé dans chaque district où un officier exploite le module. Il existe donc autant de jeux de fichiers que de districts : identiques dans leur logique et dans leur code, distincts par leur configuration — nom du district dans les noms de fichiers, référentiel des sites, chemins d’installation.",
+      "Ce guide décrit le **classeur de référence**, celui à partir duquel chaque copie de district est produite. Les feuilles, les formules, les plages et les procédures qui y sont documentées sont celles de toute installation.",
+      "Lorsqu’un exemple concret est utile — un chemin, un nom de fichier, un volume de données —, c’est la copie configurée pour le **district d’Illéla** qui sert d’illustration. Elle est signalée comme telle à chaque fois.",
+      "Ce qui est décrit vaut pour tout district. Ne varient d’une installation à l’autre que le nom du district dans les noms de fichiers, le contenu du référentiel des sites et les chemins recensés au § 02. La structure des classeurs, les formules et les procédures sont communes à toutes les installations."
+     ]
+    },
+    {
+     "t": "p",
+     "v": "L’application ne se réduit pas à un classeur Excel doté de quelques macros : il s’agit d’un pipeline à trois étages, réparti sur trois classeurs qui communiquent par fichier interposé. Les noms ci-dessous portent le suffixe du district ; ceux de la copie d’Illéla sont donnés en exemple."
+    },
+    {
+     "t": "fiche",
+     "titre": "Module_Visualisation_<district>.xlsm",
+     "sous": "Poste de saisie · import DHIS2 et contrôle",
+     "pairs": [
+      [
+       "Entrée",
+       "Export DHIS2 collé dans la feuille `Donnée_Importer`"
+      ],
+      [
+       "Sortie",
+       "Lignes normalisées écrites dans la Base Historique"
+      ],
+      [
+       "Cœur",
+       "`Data_Produit_Saisie` : reconstruction par formules, contrôles de cohérence, taux de complétude"
+      ]
+     ]
+    },
+    {
+     "t": "fiche",
+     "titre": "Base_HISTORIQUE_<district>.xlsx",
+     "sous": "Entrepôt · une seule table exploitée, deux colonnes calculées",
+     "pairs": [
+      [
+       "Contenu",
+       "`Tble_Data_Produit_Historique_Compl15`, 46 colonnes — 5 146 lignes dans la copie d’Illéla"
+      ],
+      [
+       "Cœur",
+       "Colonnes **Semestre** et **Consommation ajusté** — c’est là que la saisonnalité et la correction des ruptures sont encodées"
+      ]
+     ]
+    },
+    {
+     "t": "fiche",
+     "titre": "PCDD_<district>.xlsm",
+     "sous": "Poste district · CMMA, bons de commande, arbitrage",
+     "pairs": [
+      [
+       "Entrée",
+       "Requête Power Query sur la Base Historique, alimentant cinq tableaux croisés dynamiques"
+      ],
+      [
+       "Sortie",
+       "Rapport de distribution PDF soumis au MCD, historique des rapports, tables d’archive"
+      ],
+      [
+       "Cœur",
+       "`CMM&Saisie_BC` et `Pilotage_PCDD`"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "À retenir",
+     "paras": [
+      "La logique métier ne vit pas dans le VBA. Elle vit dans **deux colonnes calculées de la Base Historique** et dans **une dizaine de formules matricielles** des feuilles `CMMA` et `CMM&Saisie_BC`. Le VBA se limite à déplacer des valeurs, vérifier des verrous et exporter. Une reprise fondée sur la seule lecture des macros laisserait de côté l’essentiel de la logique."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Glossaire"
+    },
+    {
+     "t": "p",
+     "v": "Les sigles ci-dessous sont employés dans le guide d’utilisation destiné aux officiers. Ils sont repris ici à l’identique."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Sigle",
+      "Développé",
+      "Emploi"
+     ],
+     "rows": [
+      [
+       "BC",
+       "Bon de commande",
+       "Quantité demandée par la formation sanitaire, saisie en colonne `K` de `CMM&Saisie_BC`"
+      ],
+      [
+       "CMM",
+       "Consommation moyenne mensuelle",
+       "Le concept générique, réservé aux énoncés de principe"
+      ],
+      [
+       "CMMA",
+       "Consommation moyenne mensuelle **ajustée**",
+       "La valeur effectivement calculée, corrigée des jours de rupture. C’est elle qui circule dans toutes les feuilles"
+      ],
+      [
+       "CSI",
+       "Centre de santé intégré",
+       "Formation sanitaire destinataire de la distribution"
+      ],
+      [
+       "DHIS2",
+       "District Health Information System 2",
+       "Source des données logistiques en amont"
+      ],
+      [
+       "HD",
+       "Hôpital de district",
+       "Second type de destinataire, paramétré séparément des CSI"
+      ],
+      [
+       "MCD",
+       "Médecin chef de district",
+       "Valide le rapport de distribution ; peut demander des amendements"
+      ],
+      [
+       "MdS",
+       "Mois de stock",
+       "Unité de couverture : stock divisé par la CMMA"
+      ],
+      [
+       "ONPPC",
+       "Office national des produits pharmaceutiques et chimiques",
+       "Approvisionne les districts avant chaque trimestre ; ses retards motivent le stock de sécurité"
+      ],
+      [
+       "PCDD",
+       "Plan de contrôle de distribution des districts",
+       "Le dispositif, et par extension le classeur `PCDD_<district>.xlsm`"
+      ],
+      [
+       "PNLP",
+       "Programme national de lutte contre le paludisme",
+       "Source des allocations saisies en `M10`"
+      ],
+      [
+       "SIGL",
+       "Système d’information en gestion logistique",
+       "Les repères nationaux de couverture, de 1 à 2 MdS"
+      ],
+      [
+       "TCD",
+       "Tableau croisé dynamique",
+       "Les vues sur la Base Historique"
+      ],
+      [
+       "TDR",
+       "Test de diagnostic rapide",
+       "Produit au traitement particulier : deux libellés DHIS2 agrégés"
+      ]
+     ]
+    },
+    {
+     "t": "lede",
+     "v": "Sept étapes, deux passages par le disque, un seul point de vérité — la table de la Base Historique."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Étape",
+      "Où",
+      "Ce qui se passe"
+     ],
+     "rows": [
+      [
+       "1 · Import",
+       "Module de Visualisation",
+       "L’export DHIS2 est collé dans `Donnée_Importer` ; la macro `coller` réinstalle les colonnes calculées."
+      ],
+      [
+       "2 · Reconstruction",
+       "Module de Visualisation",
+       "`Data_Produit_Saisie` restructure les données à plat en une ligne par site × produit × mois."
+      ],
+      [
+       "3 · Contrôles",
+       "Module de Visualisation",
+       "Cohérence logistique, taux de complétude, détection de doublons."
+      ],
+      [
+       "4 · Sauvegarde",
+       "Module de Visualisation → disque",
+       "`Copier_Historique_Completude` ouvre la Base Historique, y colle les valeurs et la referme."
+      ],
+      [
+       "5 · Actualisation",
+       "Disque → PCDD",
+       "Power Query relit la table historique ; cinq TCD en dérivent les vues."
+      ],
+      [
+       "6 · CMMA et saisie",
+       "PCDD district",
+       "`CMM&Saisie_BC` calcule la CMMA retenue et reçoit le bon de commande du CSI."
+      ],
+      [
+       "7 · Arbitrage et restitution",
+       "PCDD district",
+       "`Pilotage_PCDD` arrête les quantités validées ; `Rapport_CMD_PDF` produit le rapport soumis au MCD."
+      ]
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Les étapes 4 et 5 sont les deux passages par le disque : le VBA du poste de saisie ouvre physiquement la Base Historique, y colle des valeurs et la referme ; le poste district la relit via Power Query. Il n’y a aucune base de données — le fichier *est* la base."
+    },
+    {
+     "t": "h2",
+     "v": "Les trois étapes vues par l’officier"
+    },
+    {
+     "t": "p",
+     "v": "Le guide d’utilisation structure la session mensuelle en trois étapes. La correspondance avec les sections de ce document est la suivante."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Étape (guide d’utilisation)",
+      "Section de ce guide",
+      "Objets concernés"
+     ],
+     "rows": [
+      [
+       "Étape 1 — Saisir les quantités des bons de commande",
+       "§ 07",
+       "`CMM&Saisie_BC`, `Valider_BC`"
+      ],
+      [
+       "Étape 2 — Piloter le PCDD et obtenir la validation du rapport",
+       "§ 08 — paramétrage et arbitrage ; § 09 — rapport et validation MCD",
+       "`Pilotage_PCDD`, `Ajouter_Rapport_CMD`, `Exporter_Rapport_CMD_PDF`, `Filtrer_Produit_Rapport_CMD`"
+      ],
+      [
+       "Étape 3 — Finaliser et archiver",
+       "§ 10",
+       "`Archiver_Tbl_Rapport_CMD`, `Rapport_HISTORIQUE PCDD_PDF`"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "L’étape 2 est une boucle",
+     "paras": [
+      "L’étape 2 comporte deux temps : l’arbitrage, puis la soumission du rapport au MCD pour approbation. Le MCD peut demander des amendements, qui imposent de revenir sur l’arbitrage et de régénérer le rapport. Le cycle se répète jusqu’au rapport final, qui seul fait foi — le classeur ne conserve aucune trace des tours intermédiaires.",
+      "C’est la procédure `Filtrer_Produit_Rapport_CMD`, derrière le bouton « Reprise de saisie » de l’écran de pilotage, qui rend ce retour possible. Elle n’est donc pas un chemin de rattrapage en cas d’erreur, mais une étape normale du circuit d’approbation. Voir le § 09."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Les chemins d’installation"
+    },
+    {
+     "t": "note",
+     "kind": "stop",
+     "label": "Version d’Excel requise",
+     "paras": [
+      "Le PCDD et le Module de Visualisation reposent sur des fonctions matricielles dynamiques qui n’existent qu’à partir de Microsoft 365 : `FILTRE`, `UNIQUE`, `TRIER`, `RECHERCHEX`, `LET` et `CHOISIRCOLS`. À elles seules, `FILTRE` et `RECHERCHEX` apparaissent plus de trois cents fois dans le classeur.",
+      "Sur une version antérieure — Office 2019 ou 2016 —, le calcul n’est pas faux : il n’a pas lieu. Les cellules concernées affichent `#NOM?`, la CMMA ne se calcule plus et les boutons ne s’affichent pas. Microsoft 365 est donc un prérequis d’installation au même titre que les chemins d’accès."
+     ]
+    },
+    {
+     "t": "p",
+     "v": "L’application est configurée district par district. Chaque officier travaille sur sa propre copie des trois fichiers, déposée dans son dossier OneDrive synchronisé, et les chemins sont écrits en dur dans le code en fonction de cet emplacement. **Ce sont donc des paramètres d’installation, non des constantes du produit** : ils varient d’une copie à l’autre et doivent être renseignés à la configuration. Une nouvelle version se diffuse en écrasant le fichier dans le dossier de l’officier, ce qui suppose que le fichier déposé porte déjà les chemins de cette installation."
+    },
+    {
+     "t": "code",
+     "cap": "Moule — tout chemin du projet se décompose ainsi",
+     "lignes": [
+      "C:\\Users\\<officier>\\OneDrive - Chemonics\\<dossier de travail>\\<fichier>",
+      "",
+      "' <officier>            varie  — compte de session Windows",
+      "' <dossier de travail>  varie  — arborescence propre à l’officier",
+      "' <fichier>             varie  — suffixé du nom du district"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Le classeur de référence est livré non configuré : les littéraux qu’il contient sont ceux du poste de développement. La configuration consiste à les remplacer par ceux du poste de l’officier. L’exemple ci-dessous est la copie du district d’Illéla, dont le propriétaire est le compte `bgarba` et le dossier de travail `Bureau\\PCDD\\Module_Visualisation\\` ; les trois fichiers et les dossiers de sortie y cohabitent."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Cible",
+      "Utilisée par",
+      "Exemple — la copie d’Illéla"
+     ],
+     "rows": [
+      [
+       "**Base Historique**",
+       "PCDD · requête Power Query (source des TCD)\nModule de Visualisation · sauvegarde et suppression",
+       "C:\\Users\\**bgarba**\\OneDrive - Chemonics\\Bureau\\PCDD\\Module_Visualisation\\Base_HISTORIQUE_**Illela**.xlsx"
+      ],
+      [
+       "**Sortie · rapport de distribution**",
+       "PCDD · `Exporter_Rapport_CMD_PDF`",
+       "…\\Bureau\\PCDD\\Module_Visualisation\\Rapport_MCD_PDF\\"
+      ],
+      [
+       "**Sortie · photos de complétude**",
+       "Module de Visualisation · `rapport_CSI_JPG`",
+       "…\\Bureau\\PCDD\\Module_Visualisation\\Photos\\"
+      ],
+      [
+       "**Sortie · rapport CSE**",
+       "Module de Visualisation · `rapport_CSE_PDF`",
+       "…\\Bureau\\PCDD\\Module_Visualisation\\Rapport_CSE\\"
+      ]
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Dans une copie correctement configurée, la requête Power Query, la procédure d’export PDF et les procédures VBA du Module de Visualisation désignent toutes la même racine. Les procédures référencent en outre les classeurs par leur nom, suffixé du district — pour Illéla, `Workbooks(\"Module_Visualisation_Illela.xlsm\")` et `Workbooks(\"Base_HISTORIQUE_Illela.xlsx\")`."
+    },
+    {
+     "t": "note",
+     "kind": "stop",
+     "label": "L’invariant à vérifier sur chaque installation",
+     "paras": [
+      "Le fichier que **le Module de Visualisation écrit**, le fichier que **Power Query lit** et le fichier **qui existe sur le disque** doivent être un seul et même fichier — même dossier, même nom, à la lettre près.",
+      "C’est la seule vérification qui compte, parce que son échec est silencieux : le poste de saisie sauvegarde dans un fichier, le district en lit un autre, les CMMA se calculent sur un historique figé et les quantités validées s’éloignent du réel mois après mois sans qu’aucun message ne s’affiche."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Ce qu’il faut ré-encoder pour une nouvelle copie"
+    },
+    {
+     "t": "p",
+     "v": "Deux littéraux dans le PCDD, sept dans le Module de Visualisation. Aucun n’est facultatif : en oublier un produit exactement la panne silencieuse décrite plus haut."
+    },
+    {
+     "t": "table",
+     "head": [
+      "#",
+      "Classeur",
+      "Procédure · variable",
+      "Comment y accéder",
+      "Quoi mettre"
+     ],
+     "rows": [
+      [
+       "1",
+       "PCDD",
+       "Requête `Tble_Data_Produit_Historique_Compl15`, étape *Source*",
+       "Données → Requêtes et connexions → clic droit → Modifier",
+       "<dossier>\\Base_HISTORIQUE_<district>.xlsx"
+      ],
+      [
+       "2",
+       "PCDD",
+       "`Exporter_Rapport_CMD_PDF` · `chemin`",
+       "Alt+F11",
+       "<dossier>\\Rapport_MCD_PDF\\"
+      ],
+      [
+       "3",
+       "Module de Visualisation",
+       "`Copier_Historique_Completude` · `CheminHistorique`",
+       "Alt+F11",
+       "<dossier>\\Base_HISTORIQUE_<district>.xlsx"
+      ],
+      [
+       "4",
+       "Module de Visualisation",
+       "`CopierVersHistorique` · `CheminHistorique`, plus deux appels `Workbooks(...)`",
+       "idem",
+       "le chemin, et les deux noms de classeur suffixés du district"
+      ],
+      [
+       "5",
+       "Module de Visualisation",
+       "`SupprimerLignesHistorique` · `CheminHistorique`, plus deux appels `Workbooks(...)`",
+       "idem",
+       "idem"
+      ],
+      [
+       "6",
+       "Module de Visualisation",
+       "`Ouvrir_Fermer_Base_HISTORIQUE_DSX`, `Calculer_NB_SI_ENS_Depuis_FichierFerme` et `Worksheet_Calculate` · `cheminFichier`",
+       "idem",
+       "<dossier>\\Base_HISTORIQUE_<district>.xlsx"
+      ],
+      [
+       "7",
+       "Module de Visualisation",
+       "`rapport_CSI_JPG` · `basePath`",
+       "idem",
+       "<dossier>\\Photos\\"
+      ],
+      [
+       "8",
+       "Module de Visualisation",
+       "`rapport_CSE_PDF` · `cheminDossier`",
+       "idem",
+       "<dossier>\\Rapport_CSE\\"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Le nom du dossier se recopie à la lettre",
+     "paras": [
+      "Dans le classeur de référence, les neuf littéraux désignent le dossier `Module_Visualiasation` — orthographié ainsi dans le code. Les chemins étant comparés caractère par caractère, le dossier créé sur le poste doit porter exactement la même graphie que celle inscrite dans le code, quelle qu’elle soit. Le plus sûr est de corriger les deux ensemble lors de la configuration."
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Les dossiers de sortie doivent exister",
+     "paras": [
+      "Les macros d’export commencent par un test `If Dir(cheminDossier, vbDirectory) = \"\" Then … Exit Sub`. Créer les sous-dossiers `Rapport_MCD_PDF`, `Photos` et `Rapport_CSE` fait partie de l’installation, sans quoi l’utilisateur reçoit « dossier introuvable » sans comprendre pourquoi."
+     ]
+    }
+   ]
+  },
+  {
+   "num": "02",
+   "court": "Module de visualisation",
+   "titre": "Le Module de Visualisation",
+   "blocks": [
+    {
+     "t": "lede",
+     "v": "Quatorze feuilles, dont une seule porte le traitement. L’export DHIS2 arrive à plat, une nappe de formules le restructure en une ligne par site × produit × mois, et le VBA transfère le résultat vers la Base Historique."
+    },
+    {
+     "t": "h2",
+     "v": "Feuilles et rôles"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Feuille",
+      "Rôle"
+     ],
+     "rows": [
+      [
+       "`Donnée_Importer`",
+       "Zone de collage de l’export DHIS2 — 12 colonnes. Des colonnes calculées y sont réinjectées par la macro `coller` : la clé site + produit, le `Statut` (croisement district actif × site actif) et le `Type Centre` (CSI ou HD selon le préfixe du nom)."
+      ],
+      [
+       "`Liste_Site`",
+       "Référentiel Région / District / Site — 518 lignes. `Liste_Site1` en porte la version enrichie du statut."
+      ],
+      [
+       "`dataname`",
+       "Table `T_Produits` : correspondance entre le libellé DHIS2 et le produit retenu. Point d’entrée pour ajouter un produit."
+      ],
+      [
+       "`Liste_Deroulante`",
+       "Feuille de calcul intermédiaire : TCD, séquences et clés concaténées. Porte le verrou global de la saisie."
+      ],
+      [
+       "`Data_Produit_Saisie`",
+       "La feuille de travail. Voir ci-dessous."
+      ],
+      [
+       "`Rapport_CSI`, `Rapport_CSE`",
+       "Mises en page exportées en image et en PDF par les macros du même nom."
+      ],
+      [
+       "`Taux_Saisie_District`",
+       "Suivi du taux de saisie, alimenté par `Cal_Taux_Saisie_District`."
+      ],
+      [
+       "`Supprimer_CSI_historique`",
+       "Écran de suppression ciblée dans la Base Historique."
+      ],
+      [
+       "`Paramettre`, `Accueil`, `Gestion_Administrative`, `image`",
+       "Navigation, paramètres et ressources graphiques."
+      ]
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "La feuille de reconstruction"
+    },
+    {
+     "t": "p",
+     "v": "Le mécanisme est un produit cartésien construit à la formule : `SEQUENCE` et `QUOTIENT` répètent chaque site autant de fois qu’il y a de produits, `LET` et `MOD` font tourner la liste des produits en regard. Les variables logistiques mensuelles sont ensuite récupérées par `RECHERCHEV` sur une clé concaténée site + produit + libellé DHIS2, dans des colonnes de travail, puis recopiées dans les colonnes exploitées."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Variable",
+      "Contenu",
+      "Origine"
+     ],
+     "rows": [
+      [
+       "Stock début",
+       "Stock disponible au début du mois",
+       "RECHERCHEV sur l’export DHIS2"
+      ],
+      [
+       "Jours de rupture",
+       "Nombre de jours sans stock dans le mois",
+       "idem"
+      ],
+      [
+       "Quantités reçues",
+       "Entrées du mois",
+       "idem"
+      ],
+      [
+       "Quantités consommées",
+       "Sorties du mois",
+       "idem"
+      ],
+      [
+       "Stock fin",
+       "Stock disponible en fin de mois",
+       "RECHERCHEV directe"
+      ],
+      [
+       "Date fin de mois",
+       "Dernier jour du mois considéré",
+       "FIN.MOIS(année ; mois)"
+      ],
+      [
+       "Analyse Base",
+       "Signale les lignes dont les quatre indicateurs se contredisent",
+       "Colonne `N` — `NB`, `SI`, `OU`, `ET`, `JOUR` et `SIERREUR` sur l’export DHIS2"
+      ],
+      [
+       "Complétude",
+       "Complétude par CSI et par produit",
+       "Colonnes `AN` et `AO` — `NB` et `SI` sur l’export DHIS2"
+      ],
+      [
+       "Complétude interprétée",
+       "Même calcul, mais un seul indicateur renseigné pour un produit suffit à considérer les autres comme renseignés",
+       "Colonnes `AP` et `AQ` — `ET`, `SI`, `MOYENNE` et `INDIRECT`"
+      ],
+      [
+       "ID_Saisie",
+       "Clé unique par ligne de produit et par CSI",
+       "Colonne `Y` — concaténation"
+      ],
+      [
+       "Date Opération",
+       "Date et heure de l’enregistrement",
+       "Colonne `Z` — `SI` et `MAINTENANT`"
+      ],
+      [
+       "Test Doublons",
+       "Teste si l’enregistrement existe déjà dans la Base Historique",
+       "Colonne `AA` — `SI`, `ESTNA` et `RECHERCHEV`"
+      ],
+      [
+       "Complétude Du",
+       "Rattache à chaque ligne la date de complétude saisie en `P12`",
+       "Colonne `AD` — `SI`"
+      ]
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Les formules de contrôle et d’horodatage"
+    },
+    {
+     "t": "p",
+     "v": "Sept colonnes de `Data_Produit_Saisie` ne portent pas de donnée logistique : elles contrôlent, identifient et horodatent. Les formules sont transcrites en notation française ; la ligne 2 sert de référence, la formule étant recopiée sur toute la colonne."
+    },
+    {
+     "t": "code",
+     "cap": "Data_Produit_Saisie — contrôle, clé, horodatage",
+     "lignes": [
+      "N    =SI(NB(H2:K2)=4;",
+      "        SIERREUR(SI(OU(ET(H2=0; J2=0; R2=0; K2>0);",
+      "                       ET(H2=0; J2=0; K2=0; I2=0);",
+      "                       ET(OU(H2>0; J2>0); K2=0; I2>0);",
+      "                       K2>(H2+J2+Q2);",
+      "                       ET(OU(H2>0; J2>0); I2=JOUR(M2)));",
+      "                 \"données incohérentes\"; \"\"); \"\");",
+      "        \"\")",
+      "",
+      "Y    =SI($A$3=55; B2&C2&D2&$P$12; \"\")",
+      "Z    =SI($A$3=55; MAINTENANT(); \"\")",
+      "AA   =SI($A$3=55;",
+      "        SI(ESTNA(RECHERCHEV(B2&C2&D2&$P$12;",
+      "                 Data_Produit_Historique!$X:$X; 1; FAUX)); \"Ok\"; \"Doublons\");",
+      "        \"\")",
+      "AD   =SI($P$12=\"\"; \"\"; $P$12)"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "La colonne `N` ne se prononce que si les quatre indicateurs sont renseignés — `NB(H2:K2)=4`. Elle signale alors une incohérence dans cinq cas : consommation déclarée sans stock ni réception ; ligne entièrement à zéro ; stock en début de mois mais aucune consommation alors que des jours de rupture sont déclarés ; consommation supérieure à tout ce qui a pu être disponible ; rupture couvrant le mois entier malgré un stock initial."
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Le verrou de saisie",
+     "paras": [
+      "Les colonnes `Y`, `Z`, `AA` et `AD` ne se remplissent que si la cellule `A3` vaut 55. Tant que ce verrou n’est pas levé, aucune clé ni aucun horodatage n’est produit, ce qui interdit un transfert accidentel vers la Base Historique.",
+      "La colonne `AA` interroge ensuite la Base Historique par `RECHERCHEV` sur sa colonne `X`, qui porte la même clé concaténée. C’est ce test qui produit le signal « Doublons » et bloque la sauvegarde d’une période déjà enregistrée."
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Le TDR paludisme est le cas particulier : deux libellés DHIS2 distincts — antigène HRP2 et HRP2/pLDH — sont additionnés en un seul produit, ce qui explique une branche conditionnelle dupliquée dans chacune des quatre colonnes de travail."
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Comportement de la branche TDR",
+     "paras": [
+      "Dans la colonne des jours de rupture, la branche TDR se termine par `MAX(RECHERCHEV(…);)` — le second argument du `MAX` est vide et le second `RECHERCHEV` n’est jamais lu, alors que les trois autres colonnes additionnent bien les deux libellés. Sur les TDR, les jours de rupture sont donc pris sur un seul des deux antigènes."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Les contrôles et la sauvegarde"
+    },
+    {
+     "t": "p",
+     "v": "La macro `Copier_Historique_Completude`, derrière le bouton « Sauvegarde », applique quatre gardes avant d’écrire quoi que ce soit."
+    },
+    {
+     "t": "fiche",
+     "titre": "Copier_Historique_Completude",
+     "sous": "Bouton · poste de saisie",
+     "pairs": [
+      [
+       "Garde 1",
+       "Un centre sanitaire doit être sélectionné"
+      ],
+      [
+       "Garde 2",
+       "La **date de complétude** doit être renseignée en `P12`"
+      ],
+      [
+       "Garde 3",
+       "Aucun enregistrement ne doit déjà exister pour ce centre et cette période"
+      ],
+      [
+       "Action",
+       "Ouvre la Base Historique, la déprotège avec le mot de passe `Chemonics`, colle 31 colonnes de valeurs à la première ligne libre de `Data_Produit_Historique_Complét`"
+      ],
+      [
+       "Bascule",
+       "Si le **jour de la date saisie en `P12` est le 15**, colle également dans `Data_Produit_Historique_Compl15` — la seule table que le PCDD district consomme"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "La règle du 15 du mois",
+     "paras": [
+      "Le guide d’utilisation l’énonce comme une règle de gestion : l’extraction DHIS2 est effectuée à partir du 15, et le PCDD n’utilise que la situation arrêtée au 15 de chaque mois. La bascule vers `Compl15` applique cette règle.",
+      "Précision technique utile au repreneur : le test porte sur le jour de la **date de complétude saisie par l’officier** en `P12`, et non sur la date du jour. C’est une amélioration par rapport aux versions antérieures, où la bascule dépendait du moment où l’officier cliquait. Le test reste une égalité stricte : une date de complétude au 14 ou au 16 alimente l’historique complet sans alimenter la table lue par le PCDD."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "L’enchaînement capture et transfert"
+    },
+    {
+     "t": "p",
+     "v": "La capture d’image de la complétude et le transfert vers la Base Historique sont deux gestes distincts, longtemps exécutés par deux boutons séparés. La procédure `Tout_Executer` les enchaîne."
+    },
+    {
+     "t": "code",
+     "cap": "Tout_Executer — module standard",
+     "lignes": [
+      "Sub Tout_Executer()",
+      "    ' Étape 1 : capture photo du rapport",
+      "    If Not rapport_CSI_JPG() Then Exit Sub",
+      "    ' Étape 2 : transfert des données vers l’historique",
+      "    If Not Copier_Historique_Completude() Then Exit Sub",
+      "    MsgBox \"Traitement complet réussi : Capture et Transfert effectués avec succès !\"",
+      "End Sub"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "L’enchaînement a imposé une modification de signature : `rapport_CSI_JPG` et `Copier_Historique_Completude` sont désormais déclarées `Function … As Boolean` et non plus `Sub`. Chacune renvoie `False` lorsqu’une garde échoue ou que l’officier annule, ce qui interrompt la séquence. Les deux procédures restent appelables isolément."
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Ce que l’enchaînement garantit",
+     "paras": [
+      "La capture précède le transfert. L’image conserve donc l’état des données **avant** l’écriture dans la Base Historique, ce qui en fait une pièce justificative des cases restées vides au moment de la clôture — c’est l’usage visé pour les relances auprès des chefs CSI.",
+      "Et comme le transfert ne s’exécute pas si la capture a échoué, les deux sorties ne peuvent pas diverger : il n’existe pas de mois transféré sans image correspondante."
+     ]
+    }
+   ]
+  },
+  {
+   "num": "03",
+   "court": "Base Historique et CMMA",
+   "titre": "La Base Historique et le calcul de la CMMA",
+   "blocks": [
+    {
+     "t": "lede",
+     "v": "Trois feuilles, dont une seule table structurée exploitée par l’application. Les deux règles de gestion centrales du projet y sont encodées : la correction des ruptures de stock et la saisonnalité du paludisme."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Feuille",
+      "Colonnes",
+      "Statut"
+     ],
+     "rows": [
+      [
+       "`Data_Produit_Historique`",
+       "A:Z",
+       "Format historique v1 — cible de `CopierVersHistorique` et de `SupprimerLignesHistorique`"
+      ],
+      [
+       "`Data_Produit_Historique_Complét`",
+       "A:AC",
+       "Format enrichi — cible de toutes les sauvegardes"
+      ],
+      [
+       "`Data_Produit_Historique_Compl15`",
+       "A:AT, 5 146 lignes",
+       "**Table `Tble_Data_Produit_Historique_Compl15` — l’unique source du PCDD district**"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Une base par district",
+     "paras": [
+      "La Base Historique ne porte que les données d’un seul district — 5 146 lignes dans la copie d’Illéla. Les versions antérieures travaillaient sur une base régionale de plus de cinquante mille lignes. Le passage au périmètre du district divise d’autant le temps de recalcul des trois colonnes ci-dessous, qui sont recalculées sur toute la table à chaque ouverture."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Colonne Consommation ajusté — la correction des ruptures"
+    },
+    {
+     "t": "p",
+     "v": "Une consommation observée sur un mois où le produit a été en rupture dix jours sous-estime le besoin réel. La colonne la redresse au prorata des jours servis."
+    },
+    {
+     "t": "code",
+     "cap": "Tble_Data_Produit_Historique_Compl15[Consommation ajusté] — colonne calculée",
+     "lignes": [
+      "=LET(",
+      "   Q;  [@[Quantités Consommees]];",
+      "   JR; [@[Nombre de jours de rupture]];",
+      "   JM; JOUR([@[Date Fin Mois]]);",
+      "",
+      "   SI(OU(NON(ESTNUM(Q)); Q<=0);",
+      "      NA();                          ' pas de conso exploitable → exclue des moyennes",
+      "      SI(OU(NON(ESTNUM(JR)); JR<=0; JR>=JM);",
+      "         Q;                          ' pas de rupture (ou rupture aberrante) → brut",
+      "         JM * Q / (JM - JR)          ' redressement au prorata",
+      "      )))"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Deux propriétés à connaître avant toute modification en aval :"
+    },
+    {
+     "t": "ul",
+     "items": [
+      "Le retour `NA()` est délibéré : il fait qu’un mois sans consommation est **ignoré** par les moyennes de TCD, au lieu de tirer la CMMA vers zéro. Son remplacement par `0` fausserait l’ensemble du calcul sans qu’aucune erreur ne soit signalée.",
+      "Le garde-fou `JR >= JM` évite la division par zéro d’un mois entièrement en rupture ; la consommation brute est alors conservée telle quelle."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Colonne Semestre — la saisonnalité"
+    },
+    {
+     "t": "code",
+     "cap": "[Semestre] — colonne calculée",
+     "lignes": [
+      "=SI(MOIS([@[Date Fin Mois]])<=6; \"Faible T\";",
+      "    SI(MOIS([@[Date Fin Mois]])>6;  \"Forte T\"; \"\"))"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "**Faible T** : janvier à juin. **Forte T** : juillet à décembre. Cette colonne devient l’axe *colonnes* du TCD `TCD_CA_A_Faibe&Forte_T`, et donc la source du repli saisonnier de la CMMA."
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Colonne inerte",
+     "paras": [
+      "Cette colonne marque « Forte » les mois de **juin**, juillet et août, alors que la colonne `Semestre` classe juin en Faible T. Les deux règles se contredisent d’un mois. Par ailleurs les six autres mois renvoient `#N/A`, aucune condition n’étant satisfaite. La colonne n’alimente que le TCD `TCD_CA_A_Type_CMMA_Antérieue`, qui n’est lu par aucune formule du PCDD — elle est donc **inerte**."
+     ]
+    },
+    {
+     "t": "lede",
+     "v": "Le calcul repose sur trois niveaux successifs. Il constitue le cœur fonctionnel de l’application et la partie la plus sensible à toute modification."
+    },
+    {
+     "t": "h2",
+     "v": "Niveau 1 — la fenêtre de trois mois, corrigée de la saison"
+    },
+    {
+     "t": "p",
+     "v": "La feuille `CMMA` choisit d’abord *quels* trois mois observer. Le principe : une CMMA se calcule sur les trois mois précédents — sauf en début de saison, où les trois mois précédents appartiennent à l’autre régime de transmission. Juin ne prédit pas juillet ; décembre ne prédit pas janvier. Dans ce cas, la fenêtre équivalente de l’année précédente est retenue."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Mois courant",
+      "Fenêtre retenue",
+      "Année",
+      "Pourquoi"
+     ],
+     "rows": [
+      [
+       "Janvier · Février · Mars",
+       "Jan · Fév · Mars",
+       "N−1",
+       "Les 3 mois précédents seraient en Forte T"
+      ],
+      [
+       "Avril · Mai · Juin",
+       "M−1 · M−2 · M−3",
+       "N",
+       "Fenêtre glissante, entièrement Faible T"
+      ],
+      [
+       "Juillet · Août · Septembre",
+       "Juil · Août · Sept",
+       "N−1",
+       "Les 3 mois précédents seraient en Faible T"
+      ],
+      [
+       "Octobre · Novembre · Décembre",
+       "M−1 · M−2 · M−3",
+       "N",
+       "Fenêtre glissante, entièrement Forte T"
+      ]
+     ]
+    },
+    {
+     "t": "p",
+     "v": "La formule matricielle `CMMA!A8` déverse ensuite les lignes correspondantes du TCD `Donnée_CMMA_A_Mois`, filtrées sur les trois mois, l’année de référence et le site sélectionné. Le résultat occupe `CMMA!A8:H31` : colonne **F** le produit, colonne **H** la moyenne de consommation ajustée du mois."
+    },
+    {
+     "t": "h2",
+     "v": "Niveau 2 — la moyenne par produit"
+    },
+    {
+     "t": "code",
+     "cap": "CMM&Saisie_BC!F8:F15 — « CMMA Calculer si donnée Disponible »",
+     "lignes": [
+      "=SI($D$8=\"\"; \"\";",
+      "   SIERREUR(",
+      "     MOYENNE(FILTRE(CMMA!$H$8:$H$31;",
+      "        (CMMA!$F$8:$F$31=E8) * (CMMA!$H$8:$H$31<>0) * ESTNUM(CMMA!$H$8:$H$31)));",
+      "     \"\"))"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Les mois à zéro et les `#N/A` hérités de `Consommation ajusté` sont exclus : la moyenne porte sur les mois réellement observés, et non sur trois mois par convention."
+    },
+    {
+     "t": "h2",
+     "v": "Niveau 3 — le repli saisonnier"
+    },
+    {
+     "t": "p",
+     "v": "Quand la fenêtre courte n’a rien donné, le calcul se replie sur la moyenne de la **saison correspondante de l’année précédente**, pour le même site et le même produit."
+    },
+    {
+     "t": "code",
+     "cap": "CMM&Saisie_BC!G8:G15 — « CMM ajustée BT ou HT (N-1) »",
+     "lignes": [
+      "=SI($D$8=\"\"; \"\";",
+      "   SI($G$4=\"Forte\";",
+      "      SOMME.SI.ENS('CA_A_Faibe&Forte_T'!$G$3:$G$400;     ' colonne « Forte T »",
+      "                   'CA_A_Faibe&Forte_T'!$A$3:$A$400; B8-1;   ' année N−1",
+      "                   'CA_A_Faibe&Forte_T'!$D$3:$D$400; D8;     ' site",
+      "                   'CA_A_Faibe&Forte_T'!$E$3:$E$400; E8);    ' produit",
+      "      SOMME.SI.ENS('CA_A_Faibe&Forte_T'!$F$3:$F$400; … )))  ' colonne « Faible T »"
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "retenir",
+     "label": "Trois conditions que la formule doit conserver",
+     "paras": [
+      "Cette formule a été reprise depuis les versions antérieures, et les trois faiblesses qu’elle présentait sont levées. Elle filtre désormais explicitement sur le **site** (`$D$3:$D$400 = D8`), là où elle s’en remettait à l’état du segment. Elle porte sur l’année **N−1** (`B8-1`), conformément à ce qu’annonce l’en-tête de colonne. Et la saison est déterminée par `$G$4`, dérivé du mois du bon de commande, plutôt que par le mois courant du poste."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "L’arbitrage final"
+    },
+    {
+     "t": "code",
+     "cap": "CMM&Saisie_BC!H8:H15 — « CMMA retenue »",
+     "lignes": [
+      "=SI($D$8=\"\"; \"\";",
+      "   SI(ET(ESTNUM(F8); F8>0);",
+      "      F8;                                   ' 1. CMMA sur 3 mois",
+      "      SI(ESTNUM(G8);",
+      "         G8;                                ' 2. repli saisonnier N−1",
+      "         \"CMMA non disp\")))                 ' 3. échec explicite"
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Plage à étendre si un produit est ajouté",
+     "paras": [
+      "La plage `CMMA!$H$8:$H$31` est dimensionnée à 24 lignes, soit 3 mois × 8 produits, et le référentiel compte aujourd’hui huit produits actifs.",
+      "L’ajout d’un neuvième produit impose donc d’étendre cette plage dans le même mouvement. À défaut, des lignes sortent de la moyenne sans qu’aucun message ne le signale : la CMMA reste affichée, mais elle est calculée sur une partie seulement des données."
+     ]
+    }
+   ]
+  },
+  {
+   "num": "04",
+   "court": "Application PCDD",
+   "titre": "L’application PCDD",
+   "blocks": [
+    {
+     "t": "lede",
+     "v": "Vingt-trois feuilles, sept tableaux structurés, une requête Power Query, dix-sept procédures VBA. La cartographie du classeur est la suivante."
+    },
+    {
+     "t": "h2",
+     "v": "Les feuilles, par rôle"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Feuille",
+      "Rôle"
+     ],
+     "rows": [
+      [
+       "`ACCUEIL`",
+       "Menu. Trois tuiles : **Saisie BC**, **Pilotage PCDD** et **Historique des rapports**. Activée à l’ouverture par `Workbook_Open`."
+      ],
+      [
+       "`Guide_d’Utilisation`",
+       "Notice intégrée."
+      ],
+      [
+       "**`CMM&Saisie_BC`**",
+       "**Étape 1** — CMMA calculée et saisie du bon de commande d’un CSI. Écran « Saisie BC » dans le guide d’utilisation."
+      ],
+      [
+       "**`Pilotage_PCDD`**",
+       "**Étape 2** — arbitrage district : stock disponible, buffer, quantités validées."
+      ],
+      [
+       "`Base_BC&CMM_Opérations_en_Cours`",
+       "File d’attente : tous les BC saisis, non encore arbitrés. Table `Tbl_BaseBCCMM_OperationsEnCours`, 18 colonnes. Tableau « Opérations en cours » dans le guide d’utilisation."
+      ],
+      [
+       "`Rapport_CMD`",
+       "Lignes arbitrées du mois. Table `Tbl_Rapport_CMD`, 15 colonnes."
+      ],
+      [
+       "`Rapport_CMD_Mds`",
+       "Synthèse district × produit en mois de stock. Table `Tbl_Rapport_CMD_Mds`, 16 colonnes."
+      ],
+      [
+       "`Rapport_CMD_PDF`",
+       "Mise en page du rapport soumis au MCD. Zone d’impression `$A$1:$O$56`."
+      ],
+      [
+       "**`Rapport_HISTORIQUE PCDD_PDF`**",
+       "**Nouveau** — consultation d’un rapport archivé, choisi par année, mois et district. Alimente la tuile « Historique des rapports »."
+      ],
+      [
+       "`Signature`",
+       "Bloc signature, conservé comme ressource."
+      ],
+      [
+       "`Base_BC&CMM_Validée&Archivée`, `Rapport_CMD_Mds __Validée&Archi`",
+       "Archives. Alimentées par `Archiver_Tbl_Rapport_CMD`."
+      ],
+      [
+       "`Rapport_CSI_Prod_Qte_Valid`",
+       "Deux TCD de contrôle sur `Tbl_Rapport_CMD`."
+      ],
+      [
+       "`Qte_Disp_DHIS2`, `CA_A_Mois`, `CA_A_Faibe&Forte_T`, `CA_A_Type_CMMA_Antérieue`, `Donnée_CMMA_A_Mois`",
+       "Les cinq feuilles-TCD alimentées par Power Query. Ce sont les vues sur la Base Historique ; aucune formule n’y est saisie à la main."
+      ],
+      [
+       "`CMMA`",
+       "Feuille de calcul intermédiaire : sélectionne la fenêtre de trois mois et déverse les consommations ajustées correspondantes."
+      ],
+      [
+       "`Liste_Produits`, `Tableau_Gestion&Suivi_CSI`, `Liste_Deroulante`",
+       "Référentiels : produits (`Tableau2`, désormais doté d’une colonne **Abréviation**), 524 sites avec population et axe saisonnier, listes déroulantes."
+      ]
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "La source unique : Power Query"
+    },
+    {
+     "t": "p",
+     "v": "Les cinq TCD partagent le même cache et la même source : la requête Power Query `Tble_Data_Produit_Historique_Compl15`, qui lit la Base Historique et ajoute deux clés concaténées servant d’axes."
+    },
+    {
+     "t": "code",
+     "cap": "Section1.m — requête Power Query",
+     "lignes": [
+      "shared Tble_Data_Produit_Historique_Compl15 = let",
+      "    Source = Excel.Workbook(File.Contents(\"<dossier>\\Base_HISTORIQUE_<district>.xlsx\"), null, true),",
+      "    Table  = Source{[Item=\"Tble_Data_Produit_Historique_Compl15\", Kind=\"Table\"]}[Data],",
+      "    Types  = Table.TransformColumnTypes(Table, { /* 46 colonnes typées */ }),",
+      "    ID_Site_Produit        = Table.AddColumn(Types, \"ID_Site_Produit\",",
+      "                               each Text.From([Année]) & [Mois] & [Site] & [Produit]),",
+      "    ID_Site_Faible_Forte_T = Table.AddColumn(ID_Site_Produit, \"ID_Site_Faible_Forte_T\",",
+      "                               each Text.From([Année]) & [Site])",
+      "in",
+      "    ID_Site_Faible_Forte_T;"
+     ]
+    },
+    {
+     "t": "table",
+     "head": [
+      "Feuille · TCD",
+      "Lignes",
+      "Colonnes / Filtres",
+      "Valeur"
+     ],
+     "rows": [
+      [
+       "`Donnée_CMMA_A_Mois`",
+       "ID_Site_Produit · Année · Mois · Région · District · Site · Produit · Stock début",
+       "—",
+       "**Moyenne** de Consommation ajusté"
+      ],
+      [
+       "`CA_A_Faibe&Forte_T`",
+       "Année · Région · District · Site · Produit",
+       "**Semestre** en colonnes",
+       "**Moyenne** de Consommation ajusté"
+      ],
+      [
+       "`CA_A_Mois`",
+       "Région · District · Site · Produit · Stock début",
+       "—",
+       "Moyenne de Consommation ajusté"
+      ],
+      [
+       "`Qte_Disp_DHIS2`",
+       "Année · Mois · Région · District · Site · Produit",
+       "—",
+       "**Somme** du stock disponible fin de mois"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Le mécanisme de sélection du CSI",
+     "paras": [
+      "Il n’y a pas de liste déroulante pour choisir le CSI. Des segments (slicers) pilotent **simultanément les TCD** : `Segment_Site1` et `Segment_District1` pour la saisie, auxquels s’ajoutent désormais `Segment_Année`, `Segment_Mois` et `Segment_District` pour la consultation de l’historique des rapports.",
+      "Sélectionner un site réduit chaque TCD à ce site ; la feuille `CMM&Saisie_BC` lit alors le nom du site dans le TCD lui-même. Autrement dit : **tant que le segment ne réduit pas la vue à un seul site, tout l’écran reste vide.** Ce verrou, déterminant pour le fonctionnement de la feuille, n’est signalé par aucun élément d’interface. La macro `Effacer_Ts_Filtre` remet tous les segments à zéro."
+     ]
+    },
+    {
+     "t": "code",
+     "cap": "CMM&Saisie_BC!D8 — récupération du CSI sélectionné",
+     "lignes": [
+      "=SI(NBVAL(UNIQUE(FILTRE(CA_A_Mois!C2:C1000; CA_A_Mois!C2:C1000<>\"\")))=1;",
+      "     CA_A_Mois!$C$2;",
+      "     \"\")"
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "La session mensuelle, étape par étape"
+    },
+    {
+     "t": "p",
+     "v": "Les trois chapitres qui suivent reprennent le déroulé décrit dans le guide d’utilisation. Ils ne répètent pas les gestes de l’officier : ils donnent, pour chaque étape, les feuilles, les formules et les procédures mises en jeu, dans l’ordre où elles s’exécutent. C’est cet ordre qui explique le séquencement du code, et il se perdrait si les procédures n’étaient décrites qu’une à une."
+    },
+    {
+     "t": "h2",
+     "v": "Étape 1 — la saisie des bons de commande"
+    },
+    {
+     "t": "p",
+     "v": "Une ligne par produit, huit lignes, une seule colonne saisissable. Trois verrous, portés par des cellules de contrôle, conditionnent l’action des boutons."
+    },
+    {
+     "t": "h3x",
+     "v": "Structure de la grille (lignes 8 à 15)"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Col.",
+      "En-tête",
+      "Origine"
+     ],
+     "rows": [
+      [
+       "B",
+       "Année",
+       "Année courante, ou N−1 si l’on est en janvier"
+      ],
+      [
+       "C",
+       "Mois",
+       "Mois précédent (« Janvier » si l’on est en janvier)"
+      ],
+      [
+       "D",
+       "CSI",
+       "Lu dans le TCD via le segment — voir § 05"
+      ],
+      [
+       "E",
+       "Produit",
+       "`TRIER(FILTRE(Liste_Deroulante!N8:N102 ; <>\"\"))`"
+      ],
+      [
+       "F",
+       "CMMA Calculer si donnée Disponible",
+       "Moyenne 3 mois — § 06 niveau 2"
+      ],
+      [
+       "G",
+       "CMM ajustée BT ou HT (N-1)",
+       "Repli saisonnier — § 06 niveau 3"
+      ],
+      [
+       "H",
+       "CMMA retenue",
+       "Arbitrage F → G → « CMMA non disp »"
+      ],
+      [
+       "I",
+       "Quantité Disponible DHIS2",
+       "`SOMME.SI.ENS` sur `Qte_Disp_DHIS2` (année, mois, produit)"
+      ],
+      [
+       "J",
+       "Stock en Main (MdS)",
+       "`I / H` — mois de stock"
+      ],
+      [
+       "**K**",
+       "**BC (Traitement)**",
+       "**Seule zone de saisie.** Plage nommée `Saisie_BC` = `$K$8:$K$15`"
+      ],
+      [
+       "L, M",
+       "Mois BC, Date_Saisie",
+       "Horodatage automatique"
+      ],
+      [
+       "N",
+       "ID_Saisie",
+       "`Année & Mois & CSI` — clé anti-doublon"
+      ],
+      [
+       "O, P",
+       "Région, District",
+       "Repris de `CMMA!C8` et `CMMA!D8`"
+      ]
+     ]
+    },
+    {
+     "t": "h3x",
+     "v": "Les trois verrous"
+    },
+    {
+     "t": "fiche",
+     "titre": "B1 — saisie complète",
+     "sous": "« Ok » ou « Non »",
+     "pairs": [
+      [
+       "Test",
+       "Aucune erreur dans `B8:E15`, exactement 8 valeurs numériques dans `Saisie_BC`, toutes entières"
+      ],
+      [
+       "Effet",
+       "`Valider_BC` refuse si la valeur diffère de « Ok »"
+      ]
+     ]
+    },
+    {
+     "t": "fiche",
+     "titre": "B2 — anti-doublon BC",
+     "sous": "« Ok » ou « Doublon »",
+     "pairs": [
+      [
+       "Test",
+       "`NB.SI(Tbl_BaseBCCMM_OperationsEnCours[ID_Saisie] ; N8)`"
+      ],
+      [
+       "Effet",
+       "`Valider_BC` refuse si la valeur diffère de « Ok »"
+      ]
+     ]
+    },
+    {
+     "t": "fiche",
+     "titre": "B3 — CSI déjà présent",
+     "sous": "« Ok » ou « Doublon »",
+     "pairs": [
+      [
+       "Test",
+       "`NB.SI(Tbl_BaseBCCMM_OperationsEnCours[CSI] ; D8)`"
+      ],
+      [
+       "Effet",
+       "`Supprimer_Donnee_BaseBCCMM` refuse si la valeur est « Ok » — il n’y a rien à reprendre"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Les boutons sont des images pilotées par les verrous",
+     "paras": [
+      "`C1` et `C2` sont les inverses de `B1` et `B2`. Ils commandent l’affichage de deux images via `Worksheet_Calculate` : ces images **sont les boutons eux-mêmes**. Le bouton « Valider la saisie » reste donc masqué tant que les contrôles ne sont pas satisfaits, ce que le guide d’utilisation décrit comme le mécanisme de contrôle principal de l’écran.",
+      "Les libellés des boutons étant portés par des images et non par du texte de cellule, ils ne sont pas lisibles dans le classeur autrement qu’à l’écran. La correspondance ci-dessous est la seule trace écrite de ce lien."
+     ]
+    },
+    {
+     "t": "h3x",
+     "v": "Les trois boutons"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Libellé à l’écran",
+      "Procédure",
+      "Rôle"
+     ],
+     "rows": [
+      [
+       "« Valider la saisie »",
+       "`Valider_BC`",
+       "Enregistre le BC dans la file d’attente"
+      ],
+      [
+       "« Reprise de saisie »",
+       "`Supprimer_Donnee_BaseBCCMM`",
+       "Recharge un BC déjà enregistré pour correction"
+      ],
+      [
+       "Effacer les filtres",
+       "`Effacer_Ts_Filtre`",
+       "Remet tous les segments à zéro"
+      ]
+     ]
+    },
+    {
+     "t": "fiche",
+     "titre": "Valider_BC",
+     "sous": "Bouton « Valider la saisie » · feuille CMM&Saisie_BC",
+     "pairs": [
+      [
+       "Garde",
+       "`B1 = \"Ok\"` et `B2 = \"Ok\"`, sinon message et sortie"
+      ],
+      [
+       "Action",
+       "Ajoute une ligne à `Tbl_BaseBCCMM_OperationsEnCours` et y colle les valeurs de `B8:P15`"
+      ],
+      [
+       "Nettoyage",
+       "`Range(\"Saisie_BC\").ClearContents`"
+      ]
+     ]
+    },
+    {
+     "t": "fiche",
+     "titre": "Supprimer_Donnee_BaseBCCMM",
+     "sous": "Bouton « Reprise de saisie » · feuille CMM&Saisie_BC",
+     "pairs": [
+      [
+       "Garde",
+       "`B3 <> \"Ok\"` — le CSI doit être effectivement présent dans la file"
+      ],
+      [
+       "Action",
+       "Recharge `K8:K15` depuis `L20:L27`, où un `FILTRE` a récupéré les BC déjà enregistrés, puis filtre la table sur le CSI et supprime les lignes correspondantes"
+      ],
+      [
+       "Lecture",
+       "Malgré son nom, la procédure sert la **reprise** d’une saisie : elle restitue les quantités avant de les retirer de la file, pour que l’officier les corrige et revalide"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Répartition des deux événements",
+     "paras": [
+      "La feuille porte deux gestionnaires. `Worksheet_Change` reçoit l’argument `Target` et porte le test `Intersect(Target, Me.Range(\"D8\"))`, qui déclenche le nettoyage de `K8:K15` au changement de produit. `Worksheet_Calculate`, qui ne reçoit pas de `Target`, ne conserve que l’affichage ou le masquage des boutons selon `C1` et `C2`."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Étape 2-A — le paramétrage et l’arbitrage district"
+    },
+    {
+     "t": "p",
+     "v": "Pour un produit donné, le district dispose de l’ensemble des bons de commande en attente et du stock disponible, et arrête les quantités à livrer. La logique tient dans une quinzaine de cellules de la zone K7:O14 et dans une colonne saisissable."
+    },
+    {
+     "t": "h3x",
+     "v": "La table des demandes"
+    },
+    {
+     "t": "code",
+     "cap": "Pilotage_PCDD!A18 — déversement, 11 colonnes A:K",
+     "lignes": [
+      "=TRIER(",
+      "   CHOISIRCOLS(",
+      "      FILTRE(Tbl_BaseBCCMM_OperationsEnCours[]; $F$10 = Tbl_BaseBCCMM…[Produit]);",
+      "      1; 11; 14; 15; 4; 3; 8; 9; 7; 10; 16);",
+      "   1)"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Soit, dans l’ordre : Année · Mois · Région · District · Produit · CSI · Disp DHIS2 · Stock (MdS) · CMMA · BC · Dist. Cible."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Col.",
+      "En-tête",
+      "Nature"
+     ],
+     "rows": [
+      [
+       "A:K",
+       "Année … Dist. Cible",
+       "Déversées, non modifiables"
+      ],
+      [
+       "**L**",
+       "**Qté Validée**",
+       "**Saisie de l’arbitre**, à partir de la ligne 18"
+      ],
+      [
+       "M",
+       "Stock après livraison",
+       "`ARRONDI(L/I + H ; 2)` — mois de stock résultants"
+      ],
+      [
+       "N",
+       "Observation / Justification",
+       "Saisie libre"
+      ],
+      [
+       "O",
+       "Qte Modifié",
+       "`K18<>L18` — booléen"
+      ],
+      [
+       "X",
+       "—",
+       "Sauvegarde des quantités déjà validées, utilisée par la reprise de saisie"
+      ],
+      [
+       "Y:AB",
+       "—",
+       "Sauvegarde des paramètres MdS et Buffer, par `SOMME.SI.ENS` sur `Tbl_Rapport_CMD_Mds`"
+      ]
+     ]
+    },
+    {
+     "t": "h3x",
+     "v": "Le bloc stock et buffer"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Cellule",
+      "Libellé à l’écran",
+      "Calcul"
+     ],
+     "rows": [
+      [
+       "`M9`",
+       "Stock début (Traitement)",
+       "Recopié de `AH3` par `Worksheet_Change` quand `F10` change — solde restant du mois précédent"
+      ],
+      [
+       "`M10`",
+       "ALLOC PNLP (Traitement)",
+       "**Saisie** — allocation reçue du programme national"
+      ],
+      [
+       "`M12`",
+       "TOTAL DISPONIBLE",
+       "`M9 + M10`"
+      ],
+      [
+       "`K14`",
+       "Stock sécurité (MdS)",
+       "**Saisie** — taux de réserve"
+      ],
+      [
+       "`L14`",
+       "BUFFER",
+       "`K14 × M12`"
+      ],
+      [
+       "`N10`",
+       "DIST.",
+       "`SOMME(L18:L1000)` — total distribué"
+      ],
+      [
+       "`O10`",
+       "Stock Restant th",
+       "`M12 − N10`"
+      ],
+      [
+       "`M14`",
+       "**STOCK NET FINAL**",
+       "`O10 − L14` — **doit rester ≥ 0**"
+      ],
+      [
+       "`O12`",
+       "Disponibilité en Mds",
+       "**Saisie obligatoire**"
+      ],
+      [
+       "`F14` · `G14` · `H14` · `I14`",
+       "MdS et Buffer (jours), CSI puis HD",
+       "Saisie — recopiés dans la synthèse district"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "La raison d’être du stock de sécurité",
+     "paras": [
+      "La réserve paramétrée en `K14` couvre le risque de retard de l’ONPPC, qui doit approvisionner les districts avant le début de chaque trimestre et livre parfois après. Sans elle, le district ne peut pas honorer les bons de commande du premier mois du trimestre. Le pourcentage retenu doit donc tenir compte du risque de retard et de la situation du stock.",
+      "Les libellés `K13` et `L13` portent la mention « T3 », qui désigne le trimestre. Le mécanisme valant pour chaque trimestre, une formulation générique éviterait l’ambiguïté — le guide d’utilisation emploie déjà « Stock sécurité trimestre suivant (% d’un MdS) »."
+     ]
+    },
+    {
+     "t": "p",
+     "v": "La ligne 3, colonnes W à AD, agrège l’ensemble en une ligne de synthèse district, écrite telle quelle dans `Tbl_Rapport_CMD_Mds` : stock avant distribution, mois de stock correspondants, total BC, CMMA district, total à distribuer, solde restant, mois de stock du solde, disponibilité MdS."
+    },
+    {
+     "t": "h3x",
+     "v": "Le bouton d’arbitrage"
+    },
+    {
+     "t": "fiche",
+     "titre": "Ajouter_Rapport_CMD",
+     "sous": "Bouton · feuille Pilotage_PCDD · quatre gardes successives",
+     "pairs": [
+      [
+       "Garde 1",
+       "Aucune cellule vide dans la colonne `L` jusqu’à la dernière ligne de `F`"
+      ],
+      [
+       "Garde 2",
+       "`I2 <> \"Doublon\"` — le produit n’est pas déjà dans `Tbl_Rapport_CMD`"
+      ],
+      [
+       "Garde 3",
+       "`M14 >= 0` — le stock net final n’est pas négatif"
+      ],
+      [
+       "Garde 4",
+       "`O12` renseignée"
+      ],
+      [
+       "Action",
+       "Copie `A18:O{dernière}` dans `Tbl_Rapport_CMD` ; écrit `M3:O3`, `F10`, `F14:I14`, `W3:AD3` et `O12` dans `Tbl_Rapport_CMD_Mds`"
+      ],
+      [
+       "Nettoyage",
+       "Vide `F10:I10`, `L18:L209`, `M9:M10`, `K14` et `O12`"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Ordre des gardes et coupure d’affichage",
+     "paras": [
+      "Les quatre gardes s’exécutent **avant** `Application.ScreenUpdating = False`. Une sortie par `Exit Sub` laisse donc l’affichage intact."
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "stop",
+     "label": "Le contrôle bloquant",
+     "paras": [
+      "La garde 3 est le principal garde-fou de l’outil. Lorsque le total des quantités validées dépasse le stock disponible diminué du stock de sécurité, `M14` devient négatif et la procédure refuse d’alimenter le rapport. Le guide d’utilisation présente ce contrôle comme empêchant la génération du rapport : il porte en réalité sur l’**ajout au rapport**, étape qui précède l’export PDF."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Étape 2-B — le rapport et le circuit de validation du MCD"
+    },
+    {
+     "t": "p",
+     "v": "Le rapport de distribution est une feuille de mise en page qui restitue les données déposées par les macros. Sa validation par le MCD est une boucle : tant qu’un amendement est demandé, l’arbitrage reprend et le rapport est régénéré."
+    },
+    {
+     "t": "h3x",
+     "v": "Rapport_CMD_PDF"
+    },
+    {
+     "t": "p",
+     "v": "Deux blocs. En haut, lignes 10 à 17, une ligne par produit du référentiel, chaque colonne étant un `RECHERCHEX` sur `Tbl_Rapport_CMD_Mds`."
+    },
+    {
+     "t": "code",
+     "cap": "Rapport_CMD_PDF!C10:M17 — schéma général",
+     "lignes": [
+      "=SIERREUR(RECHERCHEX($A10; Tbl_Rapport_CMD_Mds[Produits]; Tbl_Rapport_CMD_Mds[<colonne>]); \"\")"
+     ]
+    },
+    {
+     "t": "p",
+     "v": "Les deux dernières colonnes sont calculées autrement : **CSI Desservi** compte les CSI dont la quantité validée est supérieure à zéro, **Risques De Rupture** ceux dont le stock après livraison est inférieur ou égal à 1 MdS. Cette borne correspond au code couleur du guide d’utilisation, où le vert commence au-delà de 1 MdS."
+    },
+    {
+     "t": "p",
+     "v": "En bas, à partir de la ligne 19, le **plan de distribution des produits par CSI** : un tableau croisé où les CSI occupent les lignes et les produits les colonnes, désignés par leur abréviation issue de `Tableau2[Abréviation]`. La zone d’impression couvre `$A$1:$O$56`."
+    },
+    {
+     "t": "fiche",
+     "titre": "Exporter_Rapport_CMD_PDF",
+     "sous": "Bouton · feuille Pilotage_PCDD",
+     "pairs": [
+      [
+       "Séquence",
+       "Écrit dans `F10` le produit piloté, lu dans `Rapport_CMD!E2` → `RefreshAll` et recalcul complet → lit le nom du fichier en `M1` → fixe la zone d’impression jusqu’à la dernière ligne utile → exporte en PDF → revient sur le pilotage"
+      ],
+      [
+       "Chemin",
+       "Codé en dur — dossier `Rapport_MCD_PDF\\` de l’officier, point n° 4 de la checklist du § 02"
+      ],
+      [
+       "Produit",
+       "Repris de `Rapport_CMD!E2`, c’est-à-dire du premier produit effectivement piloté ; l’écriture dans `F10` sert à propager l’année et le mois vers `N3` et `O3`, utilisés par le PDF"
+      ],
+      [
+       "Robustesse",
+       "Gestion d’erreur complète et restauration de l’affichage sur une étiquette de sortie unique"
+      ]
+     ]
+    },
+    {
+     "t": "h3x",
+     "v": "La boucle d’approbation du MCD"
+    },
+    {
+     "t": "p",
+     "v": "Le rapport exporté est soumis au MCD, qui peut demander des amendements. Ceux-ci imposent de revenir sur l’arbitrage, puis de régénérer le rapport. C’est la procédure ci-dessous qui rend ce retour possible : elle n’est pas un chemin de rattrapage en cas d’erreur, mais une étape normale du circuit."
+    },
+    {
+     "t": "fiche",
+     "titre": "Filtrer_Produit_Rapport_CMD",
+     "sous": "Bouton « Reprise de saisie » · feuille Pilotage_PCDD",
+     "pairs": [
+      [
+       "Garde",
+       "`I3 = \"Ok\"` — le produit est bien présent dans `Tbl_Rapport_CMD`"
+      ],
+      [
+       "Restauration",
+       "Recopie `X18:X209` dans `L18:L209` — les quantités validées — et `Y17:AB17` dans `F14:I14` — les paramètres MdS et Buffer"
+      ],
+      [
+       "Retrait",
+       "Filtre et supprime les lignes du produit dans `Tbl_Rapport_CMD` et `Tbl_Rapport_CMD_Mds`, puis purge les lignes 24 à 1000 de `Rapport_CMD_PDF`"
+      ],
+      [
+       "Portée",
+       "Un seul produit à la fois, celui sélectionné en `F10`. Un amendement portant sur plusieurs produits impose de répéter l’opération"
+      ]
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Étape 3 — finaliser et archiver"
+    },
+    {
+     "t": "p",
+     "v": "L’archivage clôt le mois. Il verse le rapport final dans les tables d’archive, purge les tables de travail et rend possible l’ouverture du mois suivant — sans lui, aucune nouvelle session ne peut démarrer."
+    },
+    {
+     "t": "fiche",
+     "titre": "Archiver_Tbl_Rapport_CMD",
+     "sous": "Bouton · clôture du mois",
+     "pairs": [
+      [
+       "Garde",
+       "`Tbl_Rapport_CMD` non vide"
+      ],
+      [
+       "Action",
+       "Recopie les valeurs vers `Base_BC&CMM_Validée&Archivée` et `Rapport_CMD_Mds __Validée&Archi`"
+      ],
+      [
+       "Purge",
+       "`DataBodyRange.Delete` sur les tables de `Rapport_CMD`, `Base_BC&CMM_Opérations_en_Cours` et `Rapport_CMD_Mds`"
+      ],
+      [
+       "Reprise",
+       "Réécrit ensuite la formule de `Pilotage_PCDD!AH3` par `FormulaLocal`, pour garantir le report du solde à l’ouverture de la session suivante"
+      ],
+      [
+       "Portée",
+       "Irréversible : aucune reprise n’est possible après archivage"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Pourquoi la purge passe par le corps de table",
+     "paras": [
+      "La purge vide `DataBodyRange` au lieu de supprimer des lignes entières. Le `ListObject` conserve ainsi sa structure : les formules qui référencent ces trois tables — au premier rang `Pilotage_PCDD!AH3`, qui reporte le solde du mois précédent — gardent leur cible. `Filtrer_Produit_Rapport_CMD`, qui opère sur les mêmes tables, suit la même règle."
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Aucune trace des tours de la boucle",
+     "paras": [
+      "Le classeur ne conserve ni statut du rapport, ni PDF successifs, ni mention d’un amendement : l’archive ne retient que l’état final. C’est le choix retenu pour le projet — seul le rapport final signé fait foi."
+     ]
+    },
+    {
+     "t": "h3x",
+     "v": "La consultation de l’historique"
+    },
+    {
+     "t": "p",
+     "v": "La feuille `Rapport_HISTORIQUE PCDD_PDF`, accessible depuis la troisième tuile de l’ACCUEIL, reconstitue un rapport déjà archivé. Elle lit la table d’archive `Tbl_Rapport_CMD_Mds__ArchivER` par `SOMME.SI.ENS`, filtrée sur l’année, le mois et le district choisis par les segments `Segment_Année`, `Segment_Mois` et `Segment_District`."
+    },
+    {
+     "t": "p",
+     "v": "C’est la feuille que le guide d’utilisation désigne par « Historique des rapports » dans sa quatrième vérification préalable : avant d’engager une nouvelle session, l’officier y confirme que le mois précédent a bien été archivé."
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Titre d’impression",
+     "paras": [
+      "Le titre d’impression de cette feuille porte sur les lignes 19 à 23 : l’en-tête du rapport se répète d’une page à l’autre."
+     ]
+    }
+   ]
+  },
+  {
+   "num": "05",
+   "court": "Développement et maintenance",
+   "titre": "Développement et maintenance",
+   "blocks": [
+    {
+     "t": "lede",
+     "v": "Dix-sept procédures dans le PCDD, dix-neuf dans le Module de Visualisation. La majorité sont câblées à un bouton ou à un événement ; le reste est constitué de macros enregistrées et de reliquats de mise au point."
+    },
+    {
+     "t": "h2",
+     "v": "PCDD_<district>.xlsm"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Module",
+      "Procédure",
+      "Déclencheur",
+      "Statut"
+     ],
+     "rows": [
+      [
+       "`ThisWorkbook`",
+       "`Workbook_Open`",
+       "Ouverture",
+       "Actif — active ACCUEIL, `RefreshAll`, message de confirmation"
+      ],
+      [
+       "`Feuil3`",
+       "`Worksheet_Calculate`",
+       "Recalcul de `CMM&Saisie_BC`",
+       "Actif — affiche ou masque les boutons selon `C1` et `C2` ; contient un bloc inactif (§ 07)"
+      ],
+      [
+       "`Feuil9`",
+       "`Worksheet_Change`",
+       "Modification de `Pilotage_PCDD`",
+       "Actif — réagit à `F10` et à `F14:I14`"
+      ],
+      [
+       "`Feuil9`",
+       "`Worksheet_Calculate`",
+       "Recalcul de `Pilotage_PCDD`",
+       "Actif — affichage des pictogrammes selon `P2` / `P3`"
+      ],
+      [
+       "`Valider_BC`",
+       "`Valider_BC`",
+       "Bouton « Valider la saisie »",
+       "Actif"
+      ],
+      [
+       "`Supprimer_Donnee_BaseBCCMM`",
+       "`Supprimer_Donnee_BaseBCCMM`",
+       "Bouton « Reprise de saisie », écran 1",
+       "Actif"
+      ],
+      [
+       "`Effacer_Ts_Filtre`",
+       "`Effacer_Ts_Filtre`",
+       "Bouton",
+       "Actif"
+      ],
+      [
+       "`Ajouter_Rapport_CMD`",
+       "`Ajouter_Rapport_CMD`",
+       "Bouton",
+       "Actif"
+      ],
+      [
+       "`Module2`",
+       "`Filtrer_Produit_Rapport_CMD`",
+       "Bouton « Reprise de saisie », écran 2",
+       "Actif — boucle d’approbation du MCD"
+      ],
+      [
+       "`Archiver_Tbl_Rapport_CMD`",
+       "`Archiver_Tbl_Rapport_CMD`",
+       "Bouton",
+       "Actif"
+      ],
+      [
+       "`Exporter_Rapport_CMD_PDF`",
+       "`Exporter_Rapport_CMD_PDF`",
+       "Bouton",
+       "Actif — produit et chemin écrits en dur"
+      ],
+      [
+       "`Copier_Valeurs_K_vers_L`",
+       "`Copier_Valeurs_K_vers_L`",
+       "—",
+       "Doublon de la logique de `Worksheet_Change`"
+      ],
+      [
+       "`Module3`",
+       "`Effacer_Donnee_Filtre`",
+       "—",
+       "Ancienne version de `Filtrer_Produit_Rapport_CMD`"
+      ],
+      [
+       "`Module5`",
+       "`Ajouter_Rapport_CMD_Mds`",
+       "—",
+       "Extrait de `Ajouter_Rapport_CMD`, non appelé"
+      ],
+      [
+       "`Module6`",
+       "`macro`",
+       "—",
+       "Une ligne : `K8:K15 = L20:L27`"
+      ],
+      [
+       "`Module7` · `Module8` · `Module9`",
+       "`Macro1` · `Macro2` · `Macro3`",
+       "—",
+       "Macros enregistrées, sans effet utile"
+      ],
+      [
+       "`Module1` · `Module4`",
+       "—",
+       "—",
+       "Vides"
+      ]
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Module_Visualisation_<district>.xlsm"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Procédure",
+      "Déclencheur",
+      "Rôle · statut"
+     ],
+     "rows": [
+      [
+       "`Tout_Executer`",
+       "Bouton",
+       "Enchaîne la capture puis le transfert ; s’arrête si l’une des deux échoue"
+      ],
+      [
+       "`rapport_CSI_JPG`",
+       "Bouton, et `Tout_Executer`",
+       "`Function … As Boolean` — export image de `Rapport_CSI` vers le dossier `Photos`"
+      ],
+      [
+       "`Copier_Historique_Completude`",
+       "Bouton « Sauvegarde », et `Tout_Executer`",
+       "`Function … As Boolean` — écriture vers la Base Historique : quatre gardes, bascule vers `Compl15` au 15"
+      ],
+      [
+       "`coller`",
+       "Bouton « Coller »",
+       "Colle l’export DHIS2 en valeurs et réinstalle les formules de `Donnée_Importer`"
+      ],
+      [
+       "`Vide_Donnée_Importer`",
+       "Bouton « Vider_Exporter »",
+       "Purge la zone d’import ; déprotège puis reprotège"
+      ],
+      [
+       "`rapport_CSE_PDF`",
+       "Bouton",
+       "Export PDF de la feuille `Rapport_CSE`"
+      ],
+      [
+       "`Actualiser`",
+       "Bouton",
+       "Actualise les tableaux croisés du module"
+      ],
+      [
+       "`Calculer_NB_SI_ENS_Depuis_FichierFerme`",
+       "`Worksheet_Calculate`",
+       "Compte des lignes de l’historique sans ouvrir le classeur"
+      ],
+      [
+       "`Completude_Du_DropButtonClick`",
+       "Contrôle de la feuille",
+       "Sélection de la date de complétude"
+      ],
+      [
+       "`CreerDossierSiAbsent`",
+       "Appelée",
+       "Crée l’arborescence de sortie si elle n’existe pas"
+      ],
+      [
+       "`CopierVersHistorique`",
+       "—",
+       "Écriture vers `Data_Produit_Historique`, format v1"
+      ],
+      [
+       "`SupprimerLignesHistorique`",
+       "Feuille `Supprimer_CSI_historique`",
+       "Suppression par filtre Année / Mois / Centre dans la Base Historique"
+      ],
+      [
+       "`Ouvrir_Fermer_Base_HISTORIQUE_DSX`",
+       "—",
+       "Ouvre et referme la Base Historique en lecture seule"
+      ],
+      [
+       "`test`, `a_efface`, `Macro1`, `Macro2`, `UserForm_Click`",
+       "—",
+       "Reliquats et formulaires non référencés"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Conventions du projet",
+     "paras": [
+      "Aucun module ne déclare `Option Explicit`, et plusieurs variables sont utilisées sans `Dim`. Activer `Option Explicit` sur l’ensemble du projet, puis compiler, révèle en une passe les fautes de frappe qui se traduisent aujourd’hui par des comportements silencieux.",
+      "Les feuilles sont protégées par le mot de passe `Chemonics`, écrit en clair dans les procédures qui déprotègent puis reprotègent. Cette protection vise l’écrasement accidentel des formules par l’utilisateur ; elle ne restreint pas l’accès au code, qui reste ouvert à tout intervenant autorisé."
+     ]
+    },
+    {
+     "t": "lede",
+     "v": "Les trois opérations courantes, et l’ensemble des emplacements concernés par chacune."
+    },
+    {
+     "t": "h2",
+     "v": "Ajouter un produit"
+    },
+    {
+     "t": "p",
+     "v": "Le référentiel compte huit produits actifs. En ajouter un touche les deux classeurs."
+    },
+    {
+     "t": "ol",
+     "items": [
+      "**Module de Visualisation** · `dataname!T_Produits` — ajouter la correspondance libellé DHIS2 → produit retenu, avec statut et catégorie.",
+      "**Module de Visualisation** · `Liste_Deroulante` — vérifier que le TCD produit et la colonne de séquence reprennent le nouveau libellé.",
+      "**PCDD** · `Liste_Produits!Tableau2` — ajouter la ligne, statut « Actif », sans oublier la colonne **Abréviation** utilisée par le plan de distribution par CSI.",
+      "**PCDD** · actualiser le TCD de `Liste_Deroulante`.",
+      "**PCDD** · étendre les plages figées : `CMM&Saisie_BC!K8:K15` et `L20:L27`, la plage nommée `Saisie_BC`, `CMMA!$H$8:$H$31` (3 × nombre de produits), `Rapport_CMD_PDF!A10:A17` et les `RECHERCHEX` associés.",
+      "**PCDD** · le contrôle `B1` exige `NB(Saisie_BC)=8` — cette constante est à mettre à jour."
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Point de vigilance",
+     "paras": [
+      "Le nombre 8 est écrit en dur à trois endroits au moins : la formule `B1`, la plage `Saisie_BC` et la plage `CMMA!H8:H31`. Ajouter un produit est donc une opération manuelle, à vérifier de bout en bout sur un jeu de données de test."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Ajouter ou désactiver un CSI"
+    },
+    {
+     "t": "ol",
+     "items": [
+      "**Module de Visualisation** · `Liste_Site` — Région / District / Site, et `Liste_Site1` pour le statut.",
+      "**PCDD** · `Tableau_Gestion&Suivi_CSI` — même identité, plus type, axe saisonnier de livraison, coordonnées et les six tranches de population.",
+      "Actualiser le TCD des sites dans `Liste_Deroulante`, filtré sur le statut et le district.",
+      "La colonne `Statut` de `Donnée_Importer` croise district actif × site actif : un site inactif est automatiquement écarté de l’import."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Produire la copie d’un nouveau district"
+    },
+    {
+     "t": "p",
+     "v": "L’application étant configurée district par district, chaque nouvelle installation suppose de reprendre les chemins en fonction de l’emplacement des fichiers de l’officier concerné."
+    },
+    {
+     "t": "ol",
+     "items": [
+      "Copier les trois fichiers dans le dossier de l’officier et les renommer avec le suffixe du district.",
+      "Ré-encoder les chemins recensés au § 02, sans en sauter un.",
+      "Créer les sous-dossiers de sortie `Rapport_MCD_PDF`, `Rapport_CSI` et `Rapport_CSE`, faute de quoi les macros d’export s’arrêtent sur « dossier introuvable ».",
+      "**Vérifier l’invariant :** ouvrir le Module de Visualisation et le PCDD côte à côte et confirmer qu’ils désignent le même fichier historique, caractère pour caractère. C’est le seul contrôle qui détecte la panne silencieuse décrite au § 02.",
+      "Filtrer `Tableau_Gestion&Suivi_CSI` sur le district cible, ou laisser le référentiel national et s’appuyer sur le segment District.",
+      "Faire un cycle complet de test — saisie, sauvegarde, actualisation district, saisie BC, arbitrage, export, archivage — sur un mois connu, et comparer la CMMA obtenue à un calcul manuel."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Ouvrir le code"
+    },
+    {
+     "t": "p",
+     "v": "Alt+F11 ouvre l’éditeur VBA ; le projet n’est pas protégé par mot de passe. Première opération recommandée : ajouter `Option Explicit` en tête de chaque module, puis *Débogage → Compiler VBAProject*. La compilation signale immédiatement les variables non déclarées recensées au § 11."
+    },
+    {
+     "t": "h2",
+     "v": "La documentation elle-même"
+    },
+    {
+     "t": "p",
+     "v": "Ce guide n’est pas rédigé dans Word. Il est produit à partir d’un fichier de contenu unique, `contenu.json`, dont deux moteurs tirent la version Word et la page web. Les deux rendus ne peuvent donc pas diverger, et une correction ne se fait qu’une fois."
+    },
+    {
+     "t": "note",
+     "kind": "stop",
+     "label": "Ne pas corriger le Word",
+     "paras": [
+      "Le `.docx` et le `.html` sont des produits de construction : ils sont écrasés au build suivant. Toute correction de fond passe par `contenu.json`.",
+      "Le Word reste bien entendu annotable en corrections suivies pour une relecture — c’est son usage — mais les corrections acceptées doivent être reportées dans la source."
+     ]
+    },
+    {
+     "t": "code",
+     "cap": "Reconstruire les deux livrables",
+     "lignes": [
+      "git clone <dépôt>",
+      "cd pcdd-guide-developpeur",
+      "npm install",
+      "npm run dist",
+      "",
+      "# dist/Guide_developpeur_PCDD.docx   document Word",
+      "# dist/Guide_developpeur_PCDD.html   page autonome"
+     ]
+    },
+    {
+     "t": "table",
+     "head": [
+      "Fichier",
+      "Rôle"
+     ],
+     "rows": [
+      [
+       "`contenu.json`",
+       "La source — métadonnées et six parties, en blocs typés"
+      ],
+      [
+       "`render-html.js`",
+       "Rendu web : sommaire, encarts, blocs de code"
+      ],
+      [
+       "`render-docx.js`",
+       "Rendu Word : charte GHSC-PSM, tableaux natifs, texte modifiable"
+      ],
+      [
+       "`wrap.py`",
+       "Enveloppe le fragment HTML en page autonome, nomme les livrables"
+      ],
+      [
+       "`style.css`",
+       "Feuille de style du rendu web"
+      ],
+      [
+       "`historique/extract.py`",
+       "Reconstitue `contenu.json` depuis un rendu HTML — secours"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "info",
+     "label": "Les types de blocs",
+     "paras": [
+      "Un bloc porte un type : `p`, `h2`, `h3x`, `lede`, `ul`, `ol`, `note`, `fiche`, `code`, `table`. Dans le texte, `` `code` ``, `**gras**` et `*italique*` sont interprétés. Les largeurs de colonnes des tableaux sont calculées d’après le contenu.",
+      "La charte est définie à deux endroits qui doivent rester alignés : `style.css` pour le web, l’en-tête de `render-docx.js` pour le Word."
+     ]
+    }
+   ]
+  },
+  {
+   "num": "06",
+   "court": "Contrôles, dépannage et tests",
+   "titre": "Contrôles, dépannage et tests",
+   "blocks": [
+    {
+     "t": "lede",
+     "v": "Les contrôles du système ne se ressemblent pas : certains affichent un message, d’autres masquent un bouton sans rien dire. Le tableau ci-dessous les rassemble, avec la condition détectée, le signal produit et le geste attendu."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Contrôle",
+      "Condition détectée",
+      "Signal",
+      "Action attendue"
+     ],
+     "rows": [
+      [
+       "Saisie des BC — produits renseignés",
+       "Une quantité manque pour au moins un produit du référentiel",
+       "Le bouton « Valider la saisie » ne s’affiche pas",
+       "Compléter les quantités manquantes"
+      ],
+      [
+       "Saisie des BC — valeurs entières",
+       "Une quantité comporte une décimale ou du texte",
+       "Le bouton « Valider la saisie » ne s’affiche pas",
+       "Corriger la valeur"
+      ],
+      [
+       "Saisie des BC — doublon",
+       "Un BC existe déjà pour ce CSI et cette période",
+       "Message « Doublon détecté », saisie refusée",
+       "Reprendre la saisie existante plutôt que d’en créer une"
+      ],
+      [
+       "Saisie des BC — période antérieure",
+       "Une opération d’une période précédente demeure dans « Opérations en cours »",
+       "Validation bloquée",
+       "Terminer le pilotage et l’archivage de la période précédente"
+      ],
+      [
+       "Arbitrage — colonne de saisie complète",
+       "Une cellule de la colonne `L` est vide",
+       "Message « Veuillez renseigner toutes les cellules de la colonne L »",
+       "Compléter la colonne des quantités validées"
+      ],
+      [
+       "Arbitrage — disponibilité en MdS",
+       "La cellule `O12` est vide",
+       "Message, et sélection automatique de `O12`",
+       "Saisir la couverture visée"
+      ],
+      [
+       "Arbitrage — stock net final",
+       "`M14` est négatif : le total validé dépasse le stock distribuable",
+       "Message « Stock insuffisant pour la distribution » ; le produit n’est pas ajouté au rapport",
+       "Réduire le MdS cible ou les quantités validées"
+      ],
+      [
+       "Arbitrage — produit déjà au rapport",
+       "Le produit figure déjà dans `Tbl_Rapport_CMD`",
+       "Message « Doublon détecté pour ce produit »",
+       "Supprimer l’ancienne ligne avant de relancer"
+      ],
+      [
+       "Rapport final — tous produits arbitrés",
+       "Un des huit produits n’a pas été ajouté au rapport (`P3` ≠ OK)",
+       "Aucun message : les boutons du rapport PDF et de l’archivage restent masqués",
+       "Arbitrer et ajouter les produits restants"
+      ],
+      [
+       "Export PDF — nom de fichier",
+       "La cellule `M1` est vide",
+       "Message « Le nom du fichier est vide »",
+       "Vérifier la feuille de rapport"
+      ],
+      [
+       "Export PDF — dossier de sortie",
+       "Le dossier `Rapport_MCD_PDF\\` n’existe pas",
+       "Message « dossier introuvable »",
+       "Créer le dossier, ou corriger le chemin du § 01"
+      ],
+      [
+       "Sauvegarde — enregistrement existant",
+       "La clé concaténée figure déjà dans la Base Historique (colonne `AA`)",
+       "Signal « Doublons »",
+       "Vérifier la période ; supprimer l’enregistrement avant de resauvegarder"
+      ]
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "stop",
+     "label": "Deux contrôles, deux comportements",
+     "paras": [
+      "Le contrôle du stock net final affiche un message explicite : l’officier sait pourquoi il est arrêté. Le contrôle du rapport final, lui, se contente de masquer les boutons. Aucun message n’est émis.",
+      "C’est la source d’appel la plus probable au démarrage : un officier qui cherche le bouton du rapport alors qu’il devrait chercher le produit non arbitré. Le guide d’utilisation et la fiche opératoire le signalent tous deux."
+     ]
+    },
+    {
+     "t": "h2",
+     "v": "Tests de non-régression après modification"
+    },
+    {
+     "t": "p",
+     "v": "Toute intervention sur les formules de la CMMA, sur les plages figées ou sur les procédures d’archivage doit être suivie des vérifications ci-dessous, sur une copie et non sur le classeur de l’officier."
+    },
+    {
+     "t": "ol",
+     "items": [
+      "Ouvrir le PCDD et confirmer que l’actualisation Power Query se termine sans message.",
+      "Sur un CSI dont l’historique est complet, vérifier que la CMMA affichée est identique à celle relevée avant la modification.",
+      "Sur un CSI sans historique récent, vérifier que le repli N−1 s’applique et que la mention « CMMA non disp » apparaît lorsque aucune référence n’existe.",
+      "Saisir un BC, le valider, et confirmer que la ligne arrive dans « Opérations en cours » et que la zone de saisie se vide.",
+      "Arbitrer les huit produits et confirmer que les boutons du rapport et de l’archivage apparaissent seulement après le huitième.",
+      "Produire le PDF, puis archiver, et vérifier que le solde reporté en `M9` correspond au solde restant du mois archivé."
+     ]
+    },
+    {
+     "t": "note",
+     "kind": "warn",
+     "label": "Avant toute modification",
+     "paras": [
+      "Dupliquer les trois classeurs et travailler sur la copie. L’archivage est irréversible : une fois la session clôturée, les données quittent les tables de travail et le mois ne peut plus être repris."
+     ]
+    }
+   ]
+  }
+ ]
+}
