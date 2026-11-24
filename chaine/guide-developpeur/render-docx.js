@@ -231,6 +231,7 @@ add(par([new TextRun({ text: META.legal, font: FB, size: 16, color: GRIS })], { 
 
 const doc = new Document({
   creator: 'Chemonics International — GHSC-PSM',
+  lastModifiedBy: 'Chemonics International — GHSC-PSM',
   title: META.titre,
   description: 'Documentation technique de l’application Excel de contrôle des intrants antipaludiques',
   numbering: { config: [{ reference: 'liste', levels: [{ level: 0, format: 'decimal', text: '%1.', alignment: AlignmentType.START }] }] },

@@ -5,7 +5,7 @@
   "kicker": [
    "Niger",
    "PCDD — PLAN DE CONTRÔLE DE DISTRIBUTION DES DISTRICTS",
-   "Octobre 2026"
+   "Novembre 2026"
   ],
   "chiffres": [
    [
@@ -18,15 +18,15 @@
    ],
    [
     "Procédures VBA",
-    "36"
+    "39"
    ],
    [
     "Contrôles recensés",
     "12"
    ]
   ],
-  "dev": "Développé par Chemonics International dans le cadre du projet GHSC-PSM.\nDéveloppeur : Boubacar Garba. Niger  ·  Octobre 2026.",
-  "colophon": "*Document établi sur le classeur de référence `PCDD.xlsm`, avec la copie du district d’Illéla — `PCDD_Illela.xlsm`, `Module_Visualisation_Illela.xlsm`, `Base_HISTORIQUE_Illela.xlsx` — pour les exemples de configuration. Les chemins cités en exemple sont ceux de cette installation ; toute autre s’obtient en substituant le compte de l’officier et le nom du district. Formules transcrites en notation française ; les noms de cellules, de plages et de procédures sont ceux du code.*",
+  "dev": "Développé par Chemonics International dans le cadre du projet GHSC-PSM.\nDéveloppeur : Boubacar Garba. Niger  ·  Novembre 2026.",
+  "colophon": "*Document établi sur les classeurs de référence `PCDD_Ok.xlsm` et `Module_Visualisation_FINAL_OK.xlsm`, dans leur version de novembre 2026. Les exemples de configuration — chemins, noms de fichiers, volumes de données — sont pris sur la copie du district d’Illéla ; toute autre installation s’obtient en substituant le compte de l’officier et le nom du district. Formules transcrites en notation française ; les noms de cellules, de plages et de procédures sont ceux du code.*",
   "legal": "Le projet U.S. Government Global Health Supply Chain Program — Procurement and Supply Management (GHSC-PSM) est financé par le gouvernement des États-Unis, contrat n° AID-OAA-I-15-0004. GHSC-PSM est mis en œuvre par Chemonics International. Les opinions exprimées dans ce document ne reflètent pas nécessairement celles de l’Agence des États-Unis pour le développement international ni du gouvernement des États-Unis."
  },
  "SECTIONS": [
@@ -47,7 +47,7 @@
       "Le PCDD est déployé dans chaque district où un officier exploite le module. Il existe donc autant de jeux de fichiers que de districts : identiques dans leur logique et dans leur code, distincts par leur configuration — nom du district dans les noms de fichiers, référentiel des sites, chemins d’installation.",
       "Ce guide décrit le **classeur de référence**, celui à partir duquel chaque copie de district est produite. Les feuilles, les formules, les plages et les procédures qui y sont documentées sont celles de toute installation.",
       "Lorsqu’un exemple concret est utile — un chemin, un nom de fichier, un volume de données —, c’est la copie configurée pour le **district d’Illéla** qui sert d’illustration. Elle est signalée comme telle à chaque fois.",
-      "Ce qui est décrit vaut pour tout district. Ne varient d’une installation à l’autre que le nom du district dans les noms de fichiers, le contenu du référentiel des sites et les chemins recensés au § 02. La structure des classeurs, les formules et les procédures sont communes à toutes les installations."
+      "Ce qui est décrit vaut pour tout district. Ne varient d’une installation à l’autre que le nom du district dans les noms de fichiers, le contenu du référentiel des sites et les chemins recensés au § 01. La structure des classeurs, les formules et les procédures sont communes à toutes les installations."
      ]
     },
     {
@@ -268,23 +268,23 @@
      "t": "table",
      "head": [
       "Étape (guide d’utilisation)",
-      "Section de ce guide",
+      "Partie de ce guide",
       "Objets concernés"
      ],
      "rows": [
       [
        "Étape 1 — Saisir les quantités des bons de commande",
-       "§ 07",
+       "§ 04, chapitre « Étape 1 »",
        "`CMM&Saisie_BC`, `Valider_BC`"
       ],
       [
        "Étape 2 — Piloter le PCDD et obtenir la validation du rapport",
-       "§ 08 — paramétrage et arbitrage ; § 09 — rapport et validation MCD",
+       "§ 04, chapitres « Étape 2-A » — paramétrage et arbitrage — et « Étape 2-B » — rapport et validation MCD",
        "`Pilotage_PCDD`, `Ajouter_Rapport_CMD`, `Exporter_Rapport_CMD_PDF`, `Filtrer_Produit_Rapport_CMD`"
       ],
       [
        "Étape 3 — Finaliser et archiver",
-       "§ 10",
+       "§ 04, chapitre « Étape 3 »",
        "`Archiver_Tbl_Rapport_CMD`, `Rapport_HISTORIQUE PCDD_PDF`"
       ]
      ]
@@ -295,7 +295,7 @@
      "label": "L’étape 2 est une boucle",
      "paras": [
       "L’étape 2 comporte deux temps : l’arbitrage, puis la soumission du rapport au MCD pour approbation. Le MCD peut demander des amendements, qui imposent de revenir sur l’arbitrage et de régénérer le rapport. Le cycle se répète jusqu’au rapport final, qui seul fait foi — le classeur ne conserve aucune trace des tours intermédiaires.",
-      "C’est la procédure `Filtrer_Produit_Rapport_CMD`, derrière le bouton « Reprise de saisie » de l’écran de pilotage, qui rend ce retour possible. Elle n’est donc pas un chemin de rattrapage en cas d’erreur, mais une étape normale du circuit d’approbation. Voir le § 09."
+      "C’est la procédure `Filtrer_Produit_Rapport_CMD`, derrière le bouton « Reprise de saisie » de l’écran de pilotage, qui rend ce retour possible. Elle n’est donc pas un chemin de rattrapage en cas d’erreur, mais une étape normale du circuit d’approbation. Voir le § 04, chapitre « Étape 2-B »."
      ]
     },
     {
@@ -978,7 +978,7 @@
    "blocks": [
     {
      "t": "lede",
-     "v": "Vingt-trois feuilles, sept tableaux structurés, une requête Power Query, dix-sept procédures VBA. La cartographie du classeur est la suivante."
+     "v": "Vingt-trois feuilles, sept tableaux structurés, une requête Power Query, dix-neuf procédures VBA. La cartographie du classeur est la suivante."
     },
     {
      "t": "h2",
@@ -1171,7 +1171,7 @@
       [
        "D",
        "CSI",
-       "Lu dans le TCD via le segment — voir § 05"
+       "Lu dans le TCD via le segment — voir § 04"
       ],
       [
        "E",
@@ -1181,12 +1181,12 @@
       [
        "F",
        "CMMA Calculer si donnée Disponible",
-       "Moyenne 3 mois — § 06 niveau 2"
+       "Moyenne 3 mois — § 03 niveau 2"
       ],
       [
        "G",
        "CMM ajustée BT ou HT (N-1)",
-       "Repli saisonnier — § 06 niveau 3"
+       "Repli saisonnier — § 03 niveau 3"
       ],
       [
        "H",
@@ -1600,7 +1600,7 @@
       ],
       [
        "Chemin",
-       "Codé en dur — dossier `Rapport_MCD_PDF\\` de l’officier, point n° 4 de la checklist du § 02"
+       "Codé en dur — dossier `Rapport_MCD_PDF\\` de l’officier, point n° 4 de la checklist du § 01"
       ],
       [
        "Produit",
@@ -1723,7 +1723,7 @@
    "blocks": [
     {
      "t": "lede",
-     "v": "Dix-sept procédures dans le PCDD, dix-neuf dans le Module de Visualisation. La majorité sont câblées à un bouton ou à un événement ; le reste est constitué de macros enregistrées et de reliquats de mise au point."
+     "v": "Dix-neuf procédures dans le PCDD, vingt dans le Module de Visualisation. La majorité sont câblées à un bouton ou à un événement ; le reste est constitué de macros enregistrées et de reliquats de mise au point."
     },
     {
      "t": "h2",
@@ -1748,7 +1748,7 @@
        "`Feuil3`",
        "`Worksheet_Calculate`",
        "Recalcul de `CMM&Saisie_BC`",
-       "Actif — affiche ou masque les boutons selon `C1` et `C2` ; contient un bloc inactif (§ 07)"
+       "Actif — affiche ou masque les boutons selon `C1` et `C2` ; contient un bloc inactif (§ 04, chapitre « Étape 1 »)"
       ],
       [
        "`Feuil9`",
@@ -1824,9 +1824,9 @@
       ],
       [
        "`Module6`",
-       "`macro`",
+       "`Supprimer_Lignes_Apres_Total_General`",
        "—",
-       "Une ligne : `K8:K15 = L20:L27`"
+       "Nettoie la feuille `Rapport_CMD_PDF` : supprime les dix lignes qui suivent la mention « Total général ». Ajoutée dans la version finale, câblée à aucun bouton — elle se lance depuis l’éditeur VBA."
       ],
       [
        "`Module7` · `Module8` · `Module9`",
@@ -1991,9 +1991,9 @@
      "t": "ol",
      "items": [
       "Copier les trois fichiers dans le dossier de l’officier et les renommer avec le suffixe du district.",
-      "Ré-encoder les chemins recensés au § 02, sans en sauter un.",
+      "Ré-encoder les chemins recensés au § 01, sans en sauter un.",
       "Créer les sous-dossiers de sortie `Rapport_MCD_PDF`, `Rapport_CSI` et `Rapport_CSE`, faute de quoi les macros d’export s’arrêtent sur « dossier introuvable ».",
-      "**Vérifier l’invariant :** ouvrir le Module de Visualisation et le PCDD côte à côte et confirmer qu’ils désignent le même fichier historique, caractère pour caractère. C’est le seul contrôle qui détecte la panne silencieuse décrite au § 02.",
+      "**Vérifier l’invariant :** ouvrir le Module de Visualisation et le PCDD côte à côte et confirmer qu’ils désignent le même fichier historique, caractère pour caractère. C’est le seul contrôle qui détecte la panne silencieuse décrite au § 01.",
       "Filtrer `Tableau_Gestion&Suivi_CSI` sur le district cible, ou laisser le référentiel national et s’appuyer sur le segment District.",
       "Faire un cycle complet de test — saisie, sauvegarde, actualisation district, saisie BC, arbitrage, export, archivage — sur un mois connu, et comparer la CMMA obtenue à un calcul manuel."
      ]
@@ -2004,7 +2004,7 @@
     },
     {
      "t": "p",
-     "v": "Alt+F11 ouvre l’éditeur VBA ; le projet n’est pas protégé par mot de passe. Première opération recommandée : ajouter `Option Explicit` en tête de chaque module, puis *Débogage → Compiler VBAProject*. La compilation signale immédiatement les variables non déclarées recensées au § 11."
+     "v": "Alt+F11 ouvre l’éditeur VBA ; le projet n’est pas protégé par mot de passe. Première opération recommandée : ajouter `Option Explicit` en tête de chaque module, puis *Débogage → Compiler VBAProject*. La compilation signale immédiatement les variables non déclarées recensées au début de cette partie."
     },
     {
      "t": "h2",
