@@ -233,7 +233,7 @@ const doc = new Document({
   creator: 'Chemonics International — GHSC-PSM',
   lastModifiedBy: 'Chemonics International — GHSC-PSM',
   title: META.titre,
-  description: 'Documentation technique de l’application Excel de contrôle des intrants antipaludiques',
+  description: 'Documentation technique de l’application Excel de contrôle des distributions d’intrants antipaludiques par les districts',
   numbering: { config: [{ reference: 'liste', levels: [{ level: 0, format: 'decimal', text: '%1.', alignment: AlignmentType.START }] }] },
   styles: { default: { document: { run: { font: FB, size: 21, color: ENCRE2 },
                                    paragraph: { spacing: { after: 130, line: 265 } } } } },

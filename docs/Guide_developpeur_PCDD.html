@@ -126,6 +126,7 @@ h1,h2,h3,h4,.ui,nav.toc a,th,table,.pill,.sev,.lbl,.trig,.toc-title,.kicker{
   font-family:"Gill Sans MT","Gill Sans","Source Sans 3","Helvetica Neue",Arial,sans-serif;
 }
 code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+/* un chemin ou un nom de plage ne doit pas élargir la page sur petit écran */
 
 /* ---------- shell ---------- */
 .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
@@ -161,7 +162,14 @@ h1{
 .mast-meta b{color:var(--ink-2);font-weight:500}
 
 /* ---------- nav ---------- */
-nav.toc{position:sticky;top:24px;padding:36px 0 40px}
+nav.toc{
+  position:sticky;top:24px;padding:36px 0 40px;
+  max-height:calc(100vh - 48px);overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent;
+}
+nav.toc::-webkit-scrollbar{width:6px}
+nav.toc::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+nav.toc::-webkit-scrollbar-track{background:transparent}
 nav.toc .toc-title{
   font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;
   text-transform:uppercase;color:var(--muted);margin:0 0 14px;
@@ -176,6 +184,19 @@ nav.toc a{
 nav.toc a:hover{background:var(--surface);color:var(--accent);border-left-color:var(--accent)}
 nav.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 nav.toc .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* sous-menus : chapitres d'une partie */
+nav.toc ul.sub{
+  list-style:none;margin:2px 0 10px;padding:0 0 0 12px;
+  display:flex;flex-direction:column;gap:0;
+  margin-left:18px;border-left:1px solid var(--line);
+}
+nav.toc ul.sub a{
+  display:block;grid-template-columns:none;
+  font-size:12.5px;line-height:1.3;color:var(--muted);
+  padding:4px 8px;border-left:2px solid transparent;border-radius:0 4px 4px 0;
+}
+nav.toc ul.sub a:hover{background:var(--surface);color:var(--accent);border-left-color:var(--accent)}
 
 main{padding:44px 0 120px;min-width:0}
 
@@ -202,7 +223,8 @@ hr.rule{border:0;border-top:1px solid var(--line);margin:44px 0}
 /* ---------- inline code ---------- */
 code{
   font-size:.855em;background:var(--surface-2);border:1px solid var(--line);
-  padding:.08em .34em;border-radius:3px;color:var(--ink);white-space:nowrap;
+  padding:.08em .34em;border-radius:3px;color:var(--ink);
+  white-space:normal;overflow-wrap:break-word;
 }
 .cell{color:var(--accent);background:var(--accent-soft);border-color:transparent}
 
@@ -279,7 +301,7 @@ figcaption{font-size:12.5px;color:var(--muted);margin-top:10px}
 }
 .fiche h4{margin:0 0 4px;font-size:14.5px;color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
 .fiche .trig{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:11.5px;color:var(--muted);margin:0 0 12px}
-.fiche dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:13.8px}
+.fiche dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;margin:0;font-size:13.8px}
 .fiche dt{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.1em;
           text-transform:uppercase;color:var(--muted);padding-top:4px}
 .fiche dd{margin:0;color:var(--ink-2)}
@@ -327,8 +349,9 @@ footer p{max-width:78ch;margin:0 0 12px}
 .foot-legal{border-top:1px solid var(--line);padding-top:16px;font-size:11.8px}
 
 @media (max-width:900px){
-  .layout{grid-template-columns:1fr;gap:0}
-  nav.toc{position:static;padding:26px 0 6px;border-bottom:1px solid var(--line)}
+  .layout{grid-template-columns:minmax(0,1fr);gap:0}
+  nav.toc{position:static;padding:26px 0 6px;border-bottom:1px solid var(--line);
+          max-height:none;overflow:visible}
   nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0}
   main{padding-top:30px}
 }
@@ -368,7 +391,7 @@ h4.sub{font-family:"Gill Sans MT","Gill Sans","Source Sans 3",sans-serif;font-si
         <span>Novembre 2026</span>
       </div>
       <h1>Guide développeur PCDD</h1>
-      <p class="standfirst">Documentation technique de l’application Excel de contrôle des intrants antipaludiques</p>
+      <p class="standfirst">Documentation technique de l’application Excel de contrôle des distributions d’intrants antipaludiques par les districts</p>
       <div class="mast-meta">
         <span><b>Parties</b> · 6</span>
         <span><b>Classeurs</b> · 3</span>
